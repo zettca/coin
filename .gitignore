@@ -5,6 +5,9 @@
 .idea
 .idea/*
 
+#target
+target/*
+
 # Log file
 *.log
 
