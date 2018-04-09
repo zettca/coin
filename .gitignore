@@ -6,7 +6,7 @@
 *.iml
 
 #target
-target/*
+target/
 
 # Log file
 *.log

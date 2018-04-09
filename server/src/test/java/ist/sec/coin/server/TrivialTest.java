@@ -1,4 +1,4 @@
-package ist.sec.coin;
+package ist.sec.coin.server;
 
 import org.junit.Test;
 
