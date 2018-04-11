@@ -13,4 +13,10 @@ public class PKey {
     public String getKey() {
         return key;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        PKey key2 = (PKey) obj;
+        return key.equals(key2.getKey());
+    }
 }

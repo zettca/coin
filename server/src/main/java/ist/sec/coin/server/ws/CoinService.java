@@ -2,40 +2,48 @@ package ist.sec.coin.server.ws;
 
 import ist.sec.coin.server.domain.AccountAddress;
 import ist.sec.coin.server.domain.PKey;
+import ist.sec.coin.server.domain.Transaction;
+import ist.sec.coin.server.ws.exception.InvalidAccountAddressException;
+import ist.sec.coin.server.ws.exception.InvalidAmountException;
+import ist.sec.coin.server.ws.exception.InvalidPublicKeyException;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
-import javax.jws.soap.SOAPBinding.*;
+import java.util.List;
 
 @WebService
-@SOAPBinding(style = Style.RPC, use = Use.ENCODED)
+@SOAPBinding(style = SOAPBinding.Style.RPC, use = SOAPBinding.Use.ENCODED)
 public interface CoinService {
 
     @WebMethod
-    String echo(
-            @WebParam(name = "message") String message);
+    String echo(@WebParam(name = "message") String message);
 
     @WebMethod
     void register(
-            @WebParam(name = "publicKey") PKey publicKey);
+            @WebParam(name = "publicKey") PKey publicKey
+    ) throws InvalidPublicKeyException;
 
     @WebMethod
     void sendAmount(
             @WebParam(name = "source") AccountAddress source,
             @WebParam(name = "destination") AccountAddress destination,
-            @WebParam(name = "amount") int amount);
+            @WebParam(name = "amount") int amount
+    ) throws InvalidAccountAddressException, InvalidAmountException;
 
     @WebMethod
-    void checkAccount(
-            @WebParam(name = "address") AccountAddress address);
+    AccountStatus checkAccount(
+            @WebParam(name = "address") AccountAddress address
+    ) throws InvalidAccountAddressException;
 
     @WebMethod
     void receiveAmount(
-            @WebParam(name = "address") AccountAddress address);
+            @WebParam(name = "address") AccountAddress address
+    ) throws InvalidAccountAddressException;
 
     @WebMethod
-    void audit(
-            @WebParam(name = "address") AccountAddress address);
+    List<Transaction> audit(
+            @WebParam(name = "address") AccountAddress address
+    ) throws InvalidAccountAddressException;
 }

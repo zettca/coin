@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <mainclass>ist.sec.coin.server.ws.CoinServerApp</mainclass>
+        <mainclass>ist.sec.coin.server.ws.CoinServiceApp</mainclass>
 
         <ws.name>coin</ws.name>
         <ws.host>localhost</ws.host>

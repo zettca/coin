@@ -1,22 +1,23 @@
 package ist.sec.coin.server.domain;
 
 public class Transaction {
-    private String from;
-    private String to;
+    private String source;
+    private String destination;
     private int amount;
+    // TODO: implement transaction signing
 
-    public Transaction(String from, String to, int value) {
-        this.from = from;
-        this.to = to;
-        this.amount = value;
+    public Transaction(String source, String destination, int amount) {
+        this.source = source;
+        this.destination = destination;
+        this.amount = amount;
     }
 
-    public String getFrom() {
-        return from;
+    public String getSource() {
+        return source;
     }
 
-    public String getTo() {
-        return to;
+    public String getDestination() {
+        return destination;
     }
 
     public int getAmount() {

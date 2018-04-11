@@ -5,9 +5,6 @@ import ist.sec.coin.server.ws.CoinService;
 import ist.sec.coin.server.ws.CoinServiceImplService;
 import ist.sec.coin.server.ws.PKey;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 public class CoinClient implements CoinService {
     private CoinService port;
 
