@@ -16,15 +16,6 @@ public class CoinClient implements CoinService {
         port = service.getCoinServiceImplPort();
     }
 
-    CoinClient(String endpointURL) {
-        this();
-        try {
-            URL endpoint = new URL(endpointURL);
-        } catch (MalformedURLException e) {
-            System.err.println("Malformed endpoint URL: " + endpointURL);
-        }
-    }
-
     public String echo(String message) {
         return port.echo(message);
     }
