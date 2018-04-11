@@ -16,6 +16,13 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <mainclass>ist.sec.coin.client.ws.CoinClientApp</mainclass>
+
+        <wsdl.name>coin.wsdl</wsdl.name>
+
+        <ws.name>coin</ws.name>
+        <ws.host>localhost</ws.host>
+        <ws.port>8090</ws.port>
+        <ws.endpoint>http://${ws.host}:${ws.port}/ws/${ws.name}</ws.endpoint>
     </properties>
 
     <dependencies>
@@ -30,6 +37,12 @@
             <artifactId>jaxws-rt</artifactId>
             <version>2.3.0</version>
             <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>ist.sec.coin</groupId>
+            <artifactId>server</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -50,10 +63,13 @@
                         <goals>
                             <goal>wsimport</goal>
                         </goals>
+                        <phase>generate-sources</phase>
                     </execution>
                 </executions>
                 <configuration>
-                    <wsdlDirectory>${basedir}/src/main/resources</wsdlDirectory>
+                    <wsdlUrls>
+                        <wsdlUrl>${ws.endpoint}?wsdl</wsdlUrl>
+                    </wsdlUrls>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -76,7 +92,9 @@
                 </executions>
                 <configuration>
                     <mainClass>${mainclass}</mainClass>
-                    <arguments></arguments>
+                    <arguments>
+                        <argument>${ws.endpoint}</argument>
+                    </arguments>
                 </configuration>
             </plugin>
             <plugin>
