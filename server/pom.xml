@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>coin</artifactId>
         <groupId>ist.sec.coin</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>server</artifactId>
 
@@ -16,6 +16,11 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <mainclass>ist.sec.coin.server.ws.CoinServerApp</mainclass>
+
+        <ws.name>coin</ws.name>
+        <ws.host>localhost</ws.host>
+        <ws.port>8090</ws.port>
+        <ws.url>http://${ws.host}:${ws.port}/ws/${ws.name}</ws.url>
     </properties>
 
     <dependencies>
@@ -43,28 +48,6 @@
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxws-maven-plugin</artifactId>
-                <version>2.5</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>wsimport</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <wsdlDirectory>${basedir}/src/main/resources</wsdlDirectory>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.sun.xml.ws</groupId>
-                        <artifactId>jaxws-tools</artifactId>
-                        <version>2.3.0</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
                 <executions>
@@ -76,7 +59,9 @@
                 </executions>
                 <configuration>
                     <mainClass>${mainclass}</mainClass>
-                    <arguments></arguments>
+                    <arguments>
+                        <argument>${ws.url}</argument>
+                    </arguments>
                 </configuration>
             </plugin>
             <plugin>

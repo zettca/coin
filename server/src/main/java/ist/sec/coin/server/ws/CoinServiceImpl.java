@@ -1,30 +1,34 @@
 package ist.sec.coin.server.ws;
 
+import ist.sec.coin.server.domain.AccountAddress;
+import ist.sec.coin.server.domain.PKey;
+
 import javax.jws.WebService;
-import java.security.PublicKey;
 
 @WebService(endpointInterface = "ist.sec.coin.server.ws.CoinService")
 public class CoinServiceImpl implements CoinService {
-    public CoinServiceImpl() {
+
+    public String echo(String message) {
+        return "<" + message + ">";
     }
 
-    public void register(PublicKey key) {
-
-    }
-
-    public void sendAmount(PublicKey source, PublicKey destination, int amount) {
-
-    }
-
-    public void checkAccount(PublicKey key) {
+    public void register(PKey publicKey) {
 
     }
 
-    public void receiveAmount(PublicKey key) {
+    public void sendAmount(AccountAddress source, AccountAddress destination, int amount) {
 
     }
 
-    public void audit(PublicKey key) {
+    public void checkAccount(AccountAddress key) {
+
+    }
+
+    public void receiveAmount(AccountAddress key) {
+
+    }
+
+    public void audit(AccountAddress key) {
 
     }
 }
