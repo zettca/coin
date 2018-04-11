@@ -1,39 +1,41 @@
 package ist.sec.coin.client.ws;
 
-import ist.sec.coin.server.ws.AccountAddress;
-import ist.sec.coin.server.ws.CoinService;
-import ist.sec.coin.server.ws.CoinServiceImplService;
-import ist.sec.coin.server.ws.PKey;
+import ist.sec.coin.server.ws.*;
 
 public class CoinClient implements CoinService {
     private CoinService port;
 
-    CoinClient() {
+    public CoinClient() {
         CoinServiceImplService service = new CoinServiceImplService();
         port = service.getCoinServiceImplPort();
+    }
+
+    public CoinClient(String endpointURL) {
+        this();
     }
 
     public String echo(String message) {
         return port.echo(message);
     }
 
-    public void register(PKey publicKey) {
+    public void register(PKey publicKey) throws InvalidPublicKeyException_Exception {
         port.register(publicKey);
     }
 
-    public void sendAmount(AccountAddress source, AccountAddress destination, int amount) {
+    public void sendAmount(AccountAddress source, AccountAddress destination, int amount)
+            throws InvalidAmountException_Exception, InvalidAccountAddressException_Exception {
         port.sendAmount(source, destination, amount);
     }
 
-    public void checkAccount(AccountAddress address) {
-        port.checkAccount(address);
+    public AccountStatus checkAccount(AccountAddress address) throws InvalidAccountAddressException_Exception {
+        return port.checkAccount(address);
     }
 
-    public void receiveAmount(AccountAddress address) {
+    public void receiveAmount(AccountAddress address) throws InvalidAccountAddressException_Exception {
         port.receiveAmount(address);
     }
 
-    public void audit(AccountAddress address) {
-        port.audit(address);
+    public ArrayList audit(AccountAddress address) throws InvalidAccountAddressException_Exception {
+        return port.audit(address);
     }
 }

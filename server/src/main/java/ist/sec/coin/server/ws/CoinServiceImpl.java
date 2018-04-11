@@ -8,8 +8,8 @@ import ist.sec.coin.server.ws.exception.InvalidAccountAddressException;
 import ist.sec.coin.server.ws.exception.InvalidPublicKeyException;
 
 import javax.jws.WebService;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @WebService(endpointInterface = "ist.sec.coin.server.ws.CoinService")
@@ -46,7 +46,7 @@ public class CoinServiceImpl implements CoinService {
     public AccountStatus checkAccount(AccountAddress address) {
         Ledger ledger = this.ledgers.get(address);
         // TODO: implement listing pending transactions
-        List<Transaction> pendingTransactions = null;
+        ArrayList<Transaction> pendingTransactions = null;
 
         return new AccountStatus(ledger.getBalance(), pendingTransactions);
     }
@@ -55,7 +55,7 @@ public class CoinServiceImpl implements CoinService {
 
     }
 
-    public List<Transaction> audit(AccountAddress address) throws InvalidAccountAddressException {
+    public ArrayList<Transaction> audit(AccountAddress address) throws InvalidAccountAddressException {
         Ledger ledger = this.getLedger(address);
 
         return ledger.getTransactions();

@@ -11,7 +11,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
-import java.util.List;
+import java.util.ArrayList;
 
 @WebService
 @SOAPBinding(style = SOAPBinding.Style.RPC, use = SOAPBinding.Use.ENCODED)
@@ -43,7 +43,7 @@ public interface CoinService {
     ) throws InvalidAccountAddressException;
 
     @WebMethod
-    List<Transaction> audit(
+    ArrayList<Transaction> audit(
             @WebParam(name = "address") AccountAddress address
     ) throws InvalidAccountAddressException;
 }
