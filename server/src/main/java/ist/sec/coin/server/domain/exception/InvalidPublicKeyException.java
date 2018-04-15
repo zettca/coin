@@ -1,8 +1,6 @@
 package ist.sec.coin.server.domain.exception;
 
-import javax.xml.soap.SOAPException;
-
-public class InvalidPublicKeyException extends SOAPException {
+public class InvalidPublicKeyException extends Exception {
     public InvalidPublicKeyException() {
         super();
     }

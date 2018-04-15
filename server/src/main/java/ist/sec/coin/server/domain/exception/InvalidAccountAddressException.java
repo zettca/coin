@@ -1,8 +1,6 @@
 package ist.sec.coin.server.domain.exception;
 
-import javax.xml.soap.SOAPException;
-
-public class InvalidAccountAddressException extends SOAPException {
+public class InvalidAccountAddressException extends Exception {
     public InvalidAccountAddressException() {
         super();
     }

@@ -1,8 +1,6 @@
 package ist.sec.coin.server.domain.exception;
 
-import javax.xml.soap.SOAPException;
-
-public class InvalidAmountException extends SOAPException {
+public class InvalidAmountException extends Exception {
     public InvalidAmountException() {
         super();
     }
