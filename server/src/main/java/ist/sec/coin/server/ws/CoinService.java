@@ -1,11 +1,12 @@
 package ist.sec.coin.server.ws;
 
 import ist.sec.coin.server.domain.AccountAddress;
+import ist.sec.coin.server.domain.AccountStatus;
 import ist.sec.coin.server.domain.PKey;
 import ist.sec.coin.server.domain.Transaction;
-import ist.sec.coin.server.ws.exception.InvalidAccountAddressException;
-import ist.sec.coin.server.ws.exception.InvalidAmountException;
-import ist.sec.coin.server.ws.exception.InvalidPublicKeyException;
+import ist.sec.coin.server.domain.exception.InvalidAccountAddressException;
+import ist.sec.coin.server.domain.exception.InvalidAmountException;
+import ist.sec.coin.server.domain.exception.InvalidPublicKeyException;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;

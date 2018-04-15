@@ -1,6 +1,4 @@
-package ist.sec.coin.server.ws;
-
-import ist.sec.coin.server.domain.Transaction;
+package ist.sec.coin.server.domain;
 
 import java.util.ArrayList;
 
