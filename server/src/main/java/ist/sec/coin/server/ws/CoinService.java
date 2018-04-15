@@ -1,12 +1,8 @@
 package ist.sec.coin.server.ws;
 
 import ist.sec.coin.server.domain.AccountAddress;
-import ist.sec.coin.server.domain.AccountStatus;
-import ist.sec.coin.server.domain.PKey;
 import ist.sec.coin.server.domain.Transaction;
-import ist.sec.coin.server.domain.exception.InvalidAccountAddressException;
-import ist.sec.coin.server.domain.exception.InvalidAmountException;
-import ist.sec.coin.server.domain.exception.InvalidPublicKeyException;
+import ist.sec.coin.server.ws.exception.*;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -23,28 +19,28 @@ public interface CoinService {
 
     @WebMethod
     void register(
-            @WebParam(name = "publicKey") PKey publicKey
-    ) throws InvalidPublicKeyException;
+            @WebParam(name = "certificate") String certString
+    ) throws RegisterException;
 
     @WebMethod
     void sendAmount(
             @WebParam(name = "source") AccountAddress source,
             @WebParam(name = "destination") AccountAddress destination,
             @WebParam(name = "amount") int amount
-    ) throws InvalidAccountAddressException, InvalidAmountException;
+    ) throws SendAmountException;
 
     @WebMethod
     AccountStatus checkAccount(
             @WebParam(name = "address") AccountAddress address
-    ) throws InvalidAccountAddressException;
+    ) throws CheckAccountException;
 
     @WebMethod
     void receiveAmount(
             @WebParam(name = "address") AccountAddress address
-    ) throws InvalidAccountAddressException;
+    ) throws ReceiveAmountException;
 
     @WebMethod
     ArrayList<Transaction> audit(
             @WebParam(name = "address") AccountAddress address
-    ) throws InvalidAccountAddressException;
+    ) throws AuditException;
 }

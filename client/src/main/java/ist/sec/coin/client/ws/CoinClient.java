@@ -18,24 +18,24 @@ public class CoinClient implements CoinService {
         return port.echo(message);
     }
 
-    public void register(PKey publicKey) throws InvalidPublicKeyException_Exception {
-        port.register(publicKey);
+    public void register(String certString) throws RegisterException_Exception {
+        port.register(certString);
     }
 
     public void sendAmount(AccountAddress source, AccountAddress destination, int amount)
-            throws InvalidAmountException_Exception, InvalidAccountAddressException_Exception {
+            throws SendAmountException_Exception {
         port.sendAmount(source, destination, amount);
     }
 
-    public AccountStatus checkAccount(AccountAddress address) throws InvalidAccountAddressException_Exception {
+    public AccountStatus checkAccount(AccountAddress address) throws CheckAccountException_Exception {
         return port.checkAccount(address);
     }
 
-    public void receiveAmount(AccountAddress address) throws InvalidAccountAddressException_Exception {
+    public void receiveAmount(AccountAddress address) throws ReceiveAmountException_Exception {
         port.receiveAmount(address);
     }
 
-    public ArrayList audit(AccountAddress address) throws InvalidAccountAddressException_Exception {
+    public ArrayList audit(AccountAddress address) throws AuditException_Exception {
         return port.audit(address);
     }
 }
