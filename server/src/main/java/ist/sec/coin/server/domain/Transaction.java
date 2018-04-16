@@ -10,12 +10,12 @@ import java.util.UUID;
 
 public class Transaction {
     private UUID id;
-    private String source;
-    private String destination;
+    private AccountAddress source;
+    private AccountAddress destination;
     private int amount;
     private byte[] signature;
 
-    public Transaction(UUID uuid, String source, String destination, int amount) {
+    public Transaction(UUID uuid, AccountAddress source, AccountAddress destination, int amount) {
         this.id = uuid;
         this.source = source;
         this.destination = destination;
@@ -26,11 +26,11 @@ public class Transaction {
         return id;
     }
 
-    public String getSource() {
+    public AccountAddress getSource() {
         return source;
     }
 
-    public String getDestination() {
+    public AccountAddress getDestination() {
         return destination;
     }
 

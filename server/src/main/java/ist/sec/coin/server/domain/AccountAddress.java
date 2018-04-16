@@ -13,7 +13,7 @@ public class AccountAddress {
     }
 
     public AccountAddress(Certificate cert) throws NoSuchAlgorithmException {
-        this.fingerprint = CoinSignature.digestToBase64(cert.getPublicKey().toString().getBytes());
+        this.fingerprint = CoinSignature.getCertificateFingerprint(cert);
     }
 
     public String getFingerprint() {

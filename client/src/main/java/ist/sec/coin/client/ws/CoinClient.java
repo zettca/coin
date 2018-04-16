@@ -14,28 +14,34 @@ public class CoinClient implements CoinService {
         this();
     }
 
-    public String echo(String message) {
+    @Override
+    public String echo(String message) throws EchoException_Exception {
         return port.echo(message);
     }
 
-    public void register(String certString) throws RegisterException_Exception {
-        port.register(certString);
+    @Override
+    public String register(String certString) throws RegisterException_Exception {
+        return port.register(certString);
     }
 
-    public void sendAmount(AccountAddress source, AccountAddress destination, int amount)
+    @Override
+    public void sendAmount(String source, String destination, int amount)
             throws SendAmountException_Exception {
         port.sendAmount(source, destination, amount);
     }
 
-    public AccountStatus checkAccount(AccountAddress address) throws CheckAccountException_Exception {
+    @Override
+    public AccountStatus checkAccount(String address) throws CheckAccountException_Exception {
         return port.checkAccount(address);
     }
 
-    public void receiveAmount(AccountAddress address) throws ReceiveAmountException_Exception {
+    @Override
+    public void receiveAmount(String address) throws ReceiveAmountException_Exception {
         port.receiveAmount(address);
     }
 
-    public ArrayList audit(AccountAddress address) throws AuditException_Exception {
+    @Override
+    public ArrayList audit(String address) throws AuditException_Exception {
         return port.audit(address);
     }
 }
