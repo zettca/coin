@@ -1,6 +1,6 @@
 package ist.sec.coin.server.domain.exception;
 
-public class TamperingException extends Exception {
+public class TamperingException extends CoinException {
     public TamperingException() {
     }
 

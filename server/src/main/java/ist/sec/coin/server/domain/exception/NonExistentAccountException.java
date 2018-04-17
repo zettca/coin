@@ -1,6 +1,6 @@
 package ist.sec.coin.server.domain.exception;
 
-public class NonExistentAccountException extends Exception {
+public class NonExistentAccountException extends CoinException {
     public NonExistentAccountException() {
         super();
     }

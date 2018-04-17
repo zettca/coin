@@ -3,11 +3,14 @@ package ist.sec.coin.server.ws;
 import ist.sec.coin.server.domain.AccountAddress;
 import ist.sec.coin.server.domain.Coin;
 import ist.sec.coin.server.domain.Transaction;
-import ist.sec.coin.server.domain.exception.NonExistentAccountException;
+import ist.sec.coin.server.domain.exception.CoinException;
 import ist.sec.coin.server.security.CryptoUtils;
 import ist.sec.coin.server.ws.exception.*;
 
 import javax.jws.WebService;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 
@@ -30,9 +33,6 @@ public class CoinServiceImpl implements CoinService {
 
     @Override
     public String register(String certString) throws RegisterException {
-        if (certString == null || certString.trim().isEmpty()) {
-            throw new RegisterException("Invalid Account Address");
-        }
         try {
             Certificate cert = CryptoUtils.getCertificateFromString(certString);
             AccountAddress address = coin.registerAccount(cert);
@@ -46,31 +46,27 @@ public class CoinServiceImpl implements CoinService {
     @Override
     public void sendAmount(String uid, String source, String destination, int amount, byte[] signature)
             throws SendAmountException {
-        if (uid.trim().isEmpty() || source.trim().isEmpty() || destination.trim().isEmpty()) {
-            throw new SendAmountException();
-        } else if (amount <= 0) {
-            throw new SendAmountException();
-        }
-
         try {
             Transaction transaction = new Transaction(
                     uid, new AccountAddress(source), new AccountAddress(destination), amount);
             transaction.setSourceSignature(signature);
             coin.startTransaction(transaction);
-        } catch (Exception e) {
+        } catch (CoinException e) {
+            throw new SendAmountException(e.getMessage());
+        } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
             throw new SendAmountException(e.getMessage());
         }
     }
 
     @Override
     public AccountStatus checkAccount(String address) throws CheckAccountException {
-        AccountAddress accountAddress = new AccountAddress(address);
         try {
+            AccountAddress accountAddress = new AccountAddress(address);
             int balance = coin.getAccountBalance(accountAddress);
             ArrayList<Transaction> pendingTransactions = coin.getAccountPendingTransactions(accountAddress);
             return new AccountStatus(balance, pendingTransactions);
-        } catch (NonExistentAccountException e) {
-            throw new CheckAccountException("Invalid Account Address");
+        } catch (CoinException e) {
+            throw new CheckAccountException(e.getMessage());
         }
     }
 
@@ -80,8 +76,10 @@ public class CoinServiceImpl implements CoinService {
             Transaction transaction = coin.getPendingTransaction(transactionId);
             transaction.setDestinationSignature(signature);
             coin.commitTransaction(transaction);
-        } catch (Exception e) {
-            throw new ReceiveAmountException();
+        } catch (CoinException e) {
+            throw new ReceiveAmountException(e.getMessage());
+        } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
+            throw new ReceiveAmountException(e.getMessage());
         }
 
     }
@@ -90,8 +88,8 @@ public class CoinServiceImpl implements CoinService {
     public ArrayList<Transaction> audit(String address) throws AuditException {
         try {
             return coin.getAccountTransactions(new AccountAddress(address));
-        } catch (NonExistentAccountException e) {
-            throw new AuditException("Invalid Account Address");
+        } catch (CoinException e) {
+            throw new AuditException(e.getMessage());
         }
     }
 

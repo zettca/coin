@@ -1,6 +1,6 @@
 package ist.sec.coin.server.domain.exception;
 
-public class InvalidAmountException extends Exception {
+public class InvalidAmountException extends CoinException {
     public InvalidAmountException() {
         super();
     }

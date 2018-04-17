@@ -1,9 +1,6 @@
 package ist.sec.coin.server.domain;
 
-import ist.sec.coin.server.domain.exception.InvalidAmountException;
-import ist.sec.coin.server.domain.exception.NonExistentAccountException;
-import ist.sec.coin.server.domain.exception.RegisteredAccountException;
-import ist.sec.coin.server.domain.exception.TamperingException;
+import ist.sec.coin.server.domain.exception.*;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +31,7 @@ public class Coin {
     }
 
     public synchronized AccountAddress registerAccount(Certificate cert)
-            throws RegisteredAccountException, NoSuchAlgorithmException {
+            throws CoinException, NoSuchAlgorithmException {
         AccountAddress address = new AccountAddress(cert);
 
         if (this.accountKeys.containsKey(address) || this.accountLedgers.containsKey(address)) {
@@ -113,14 +110,13 @@ public class Coin {
         pendingTransactions.clear();
     }
 
-    public synchronized Transaction getPendingTransaction(String tid) throws Exception {
+    public synchronized Transaction getPendingTransaction(String tid) throws CoinException {
         Transaction transaction = this.pendingTransactions.get(tid);
 
         if (transaction != null) {
             return transaction;
         } else {
-            //TODO: improve exception type
-            throw new Exception("Transaction ID does not match to a Transaction");
+            throw new CoinException("Transaction ID does not match to a Transaction");
         }
     }
 
