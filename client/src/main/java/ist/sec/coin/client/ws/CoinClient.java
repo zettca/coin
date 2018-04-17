@@ -25,9 +25,9 @@ public class CoinClient implements CoinService {
     }
 
     @Override
-    public void sendAmount(String source, String destination, int amount)
+    public void sendAmount(String uid, String source, String destination, int amount, byte[] signature)
             throws SendAmountException_Exception {
-        port.sendAmount(source, destination, amount);
+        port.sendAmount(uid, source, destination, amount, signature);
     }
 
     @Override
@@ -43,5 +43,10 @@ public class CoinClient implements CoinService {
     @Override
     public ArrayList audit(String address) throws AuditException_Exception {
         return port.audit(address);
+    }
+
+    @Override
+    public void clean() {
+        port.clean();
     }
 }

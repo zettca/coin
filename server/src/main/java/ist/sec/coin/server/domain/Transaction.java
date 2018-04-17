@@ -1,29 +1,33 @@
 package ist.sec.coin.server.domain;
 
-import ist.sec.coin.server.security.CoinSignature;
+import ist.sec.coin.server.security.CryptoUtils;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.SignatureException;
-import java.util.UUID;
+import java.security.cert.Certificate;
 
 public class Transaction {
-    private UUID id;
+    private String uid;
     private AccountAddress source;
     private AccountAddress destination;
     private int amount;
     private byte[] signature;
 
-    public Transaction(UUID uuid, AccountAddress source, AccountAddress destination, int amount) {
-        this.id = uuid;
+    public Transaction(String id, AccountAddress source, AccountAddress destination, int amount) {
+        this.uid = id;
         this.source = source;
         this.destination = destination;
         this.amount = amount;
     }
 
-    public UUID getId() {
-        return id;
+    public Transaction(String uid, AccountAddress source, AccountAddress destination, int amount, byte[] signature) {
+        this(uid, source, destination, amount);
+        this.signature = signature;
+    }
+
+    public String getId() {
+        return uid;
     }
 
     public AccountAddress getSource() {
@@ -42,17 +46,14 @@ public class Transaction {
         return signature;
     }
 
-    public void setSignature(byte[] signature) {
-        this.signature = signature;
+    @Override
+    public String toString() {
+        return uid + source.getFingerprint() + destination.getFingerprint() + String.valueOf(amount);
     }
 
-    public byte[] sign(PrivateKey privateKey)
+    public boolean validate(Certificate cert)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        String dataToSign = this.id.toString() + this.source + this.destination + String.valueOf(this.amount);
-
-        this.signature = CoinSignature.sign(privateKey, dataToSign.getBytes());
-
-        return this.signature;
+        return CryptoUtils.verifySignature(cert.getPublicKey(), this.signature, this.toString().getBytes());
     }
 
 }

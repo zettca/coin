@@ -9,7 +9,7 @@ public class Ledger {
 
     public Ledger(AccountAddress address, int amount) {
         this.address = address;
-        this.transactions = new ArrayList<Transaction>();
+        this.transactions = new ArrayList<>();
         this.balance = amount;
     }
 
@@ -19,6 +19,10 @@ public class Ledger {
 
     public ArrayList<Transaction> getTransactions() {
         return transactions;
+    }
+
+    public void addTransaction(Transaction transaction) {
+        this.transactions.add(transaction);
     }
 
     public int getBalance() {

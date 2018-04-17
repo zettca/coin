@@ -1,6 +1,6 @@
 package ist.sec.coin.server.domain;
 
-import ist.sec.coin.server.security.CoinSignature;
+import ist.sec.coin.server.security.CryptoUtils;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
@@ -13,7 +13,7 @@ public class AccountAddress {
     }
 
     public AccountAddress(Certificate cert) throws NoSuchAlgorithmException {
-        this.fingerprint = CoinSignature.getCertificateFingerprint(cert);
+        this.fingerprint = CryptoUtils.getCertificateFingerprint(cert);
     }
 
     public String getFingerprint() {

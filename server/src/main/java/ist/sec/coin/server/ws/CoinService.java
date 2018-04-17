@@ -25,9 +25,11 @@ public interface CoinService {
 
     @WebMethod
     void sendAmount(
+            @WebParam(name = "uid") String uid,
             @WebParam(name = "source") String source,
             @WebParam(name = "destination") String destination,
-            @WebParam(name = "amount") int amount)
+            @WebParam(name = "amount") int amount,
+            @WebParam(name = "signature") byte[] signature)
             throws SendAmountException;
 
     @WebMethod
@@ -44,4 +46,8 @@ public interface CoinService {
     ArrayList<Transaction> audit(
             @WebParam(name = "address") String address)
             throws AuditException;
+
+    // Used for testing
+    @WebMethod
+    void clean();
 }

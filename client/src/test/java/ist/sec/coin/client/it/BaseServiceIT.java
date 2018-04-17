@@ -1,7 +1,9 @@
 package ist.sec.coin.client.it;
 
 import ist.sec.coin.client.ws.CoinClient;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 
 import javax.xml.bind.DatatypeConverter;
@@ -16,20 +18,24 @@ public class BaseServiceIT {
     static CoinClient client;
     static Properties properties;
 
-    private static void populate() {
-
-    }
-
     @BeforeClass
-    public static void setup() {
+    public static void oneTimeSetup() {
         properties = new Properties();
         client = new CoinClient();
-
-        populate();
     }
 
     @AfterClass
-    public static void cleanup() {
+    public static void oneTimeCleanup() {
+    }
+
+    @Before
+    public void populate() {
+
+    }
+
+    @After
+    public void cleanup() {
+        client.clean();
     }
 
     /* ========== helpers ========== */
