@@ -2,10 +2,7 @@ package ist.sec.coin.server.domain;
 
 import ist.sec.coin.server.security.CryptoUtils;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
+import java.security.*;
 
 public class Transaction {
     private String uid;
@@ -46,14 +43,23 @@ public class Transaction {
         return signature;
     }
 
+    public void setSignature(byte[] signature) {
+        this.signature = signature;
+    }
+
     @Override
     public String toString() {
         return uid + source.getFingerprint() + destination.getFingerprint() + String.valueOf(amount);
     }
 
-    public boolean validate(Certificate cert)
+    public void sign(PrivateKey privateKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        return CryptoUtils.verifySignature(cert.getPublicKey(), this.signature, this.toString().getBytes());
+        this.signature = CryptoUtils.sign(privateKey, this.toString().getBytes());
+    }
+
+    public boolean validate(PublicKey publicKey)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        return CryptoUtils.verifySignature(publicKey, this.toString().getBytes(), signature);
     }
 
 }

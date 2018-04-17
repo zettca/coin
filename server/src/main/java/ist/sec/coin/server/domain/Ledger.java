@@ -3,8 +3,8 @@ package ist.sec.coin.server.domain;
 import java.util.ArrayList;
 
 public class Ledger {
-    private AccountAddress address;
-    private ArrayList<Transaction> transactions;
+    private final AccountAddress address;
+    private final ArrayList<Transaction> transactions;
     private int balance;
 
     public Ledger(AccountAddress address, int amount) {
@@ -21,11 +21,12 @@ public class Ledger {
         return transactions;
     }
 
-    public void addTransaction(Transaction transaction) {
-        this.transactions.add(transaction);
-    }
-
     public int getBalance() {
         return balance;
+    }
+
+    public void addTransaction(Transaction transaction) {
+        this.transactions.add(transaction);
+        this.balance += transaction.getAmount();
     }
 }

@@ -54,7 +54,7 @@ public class Coin {
         Certificate senderCertificate = getCertificate(transaction.getSource());
         Certificate receiverCertificate = getCertificate(transaction.getDestination());
 
-        if (!transaction.validate(senderCertificate) || this.transactionIdExists(transaction)) {
+        if (!transaction.validate(senderCertificate.getPublicKey()) || this.transactionIdExists(transaction)) {
             throw new TamperingException();
         } else if (this.getLedger(transaction.getSource()).getBalance() < transaction.getAmount()) {
             throw new InvalidAmountException();

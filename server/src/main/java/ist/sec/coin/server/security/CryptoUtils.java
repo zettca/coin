@@ -21,22 +21,7 @@ public final class CryptoUtils {
         return sig.sign();
     }
 
-    public static String signToBase64(PrivateKey privateKey, byte[] data)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        return DatatypeConverter.printBase64Binary(CryptoUtils.sign(privateKey, data));
-    }
-
-    public static byte[] signText(PrivateKey privateKey, String data)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        return CryptoUtils.sign(privateKey, DatatypeConverter.parseBase64Binary(data));
-    }
-
-    public static String signTextToBase64(PrivateKey privateKey, String data)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        return DatatypeConverter.printBase64Binary(CryptoUtils.signText(privateKey, data));
-    }
-
-    public static boolean verifySignature(PublicKey publicKey, byte[] cipher, byte[] data)
+    public static boolean verifySignature(PublicKey publicKey, byte[] data, byte[] cipher)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature sig = Signature.getInstance(SIGN_ALGORITHM);
         sig.initVerify(publicKey);
@@ -48,16 +33,8 @@ public final class CryptoUtils {
         return MessageDigest.getInstance(HASH_ALGORITHM).digest(data);
     }
 
-    public static String digestToHex(byte[] data) throws NoSuchAlgorithmException {
-        return DatatypeConverter.printHexBinary(CryptoUtils.digest(data));
-    }
-
-    public static String digestToBase64(byte[] data) throws NoSuchAlgorithmException {
-        return DatatypeConverter.printBase64Binary(CryptoUtils.digest(data));
-    }
-
-    public static String getCertificateFingerprint(Certificate cert) throws NoSuchAlgorithmException {
-        return digestToHex(cert.getPublicKey().getEncoded());
+    public static String getPublicKeyFingerprint(PublicKey publicKey) throws NoSuchAlgorithmException {
+        return DatatypeConverter.printBase64Binary(digest(publicKey.getEncoded()));
     }
 
     public static Certificate getCertificateFromString(String certString) throws CertificateException {
