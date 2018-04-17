@@ -53,8 +53,10 @@ public class CoinServiceImpl implements CoinService {
         }
 
         try {
-            coin.startTransaction(new Transaction(
-                    uid, new AccountAddress(source), new AccountAddress(destination), amount, signature));
+            Transaction transaction = new Transaction(
+                    uid, new AccountAddress(source), new AccountAddress(destination), amount);
+            transaction.setSourceSignature(signature);
+            coin.startTransaction(transaction);
         } catch (Exception e) {
             throw new SendAmountException(e.getMessage());
         }
@@ -73,8 +75,15 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public void receiveAmount(String address) {
-        coin.commitTransaction(new AccountAddress(address));
+    public void receiveAmount(String transactionId, byte[] signature) throws ReceiveAmountException {
+        try {
+            Transaction transaction = coin.getPendingTransaction(transactionId);
+            transaction.setDestinationSignature(signature);
+            coin.commitTransaction(transaction);
+        } catch (Exception e) {
+            throw new ReceiveAmountException();
+        }
+
     }
 
     @Override

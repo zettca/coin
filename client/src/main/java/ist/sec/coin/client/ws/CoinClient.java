@@ -36,8 +36,8 @@ public class CoinClient implements CoinService {
     }
 
     @Override
-    public void receiveAmount(String address) throws ReceiveAmountException_Exception {
-        port.receiveAmount(address);
+    public void receiveAmount(String transactionId, byte[] signature) throws ReceiveAmountException_Exception {
+        port.receiveAmount(transactionId, signature);
     }
 
     @Override

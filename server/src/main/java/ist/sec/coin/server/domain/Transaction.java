@@ -2,14 +2,16 @@ package ist.sec.coin.server.domain;
 
 import ist.sec.coin.server.security.CryptoUtils;
 
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.SignatureException;
 
 public class Transaction {
-    private String uid;
-    private AccountAddress source;
-    private AccountAddress destination;
-    private int amount;
-    private byte[] signature;
+    private final String uid;
+    private final AccountAddress source, destination;
+    private final int amount;
+    private byte[] sourceSignature, destinationSignature;
 
     public Transaction(String id, AccountAddress source, AccountAddress destination, int amount) {
         this.uid = id;
@@ -18,9 +20,11 @@ public class Transaction {
         this.amount = amount;
     }
 
-    public Transaction(String uid, AccountAddress source, AccountAddress destination, int amount, byte[] signature) {
-        this(uid, source, destination, amount);
-        this.signature = signature;
+    private static byte[] mergeBytes(byte[] a, byte[] b) {
+        byte[] result = new byte[a.length + b.length];
+        System.arraycopy(a, 0, result, 0, a.length);
+        System.arraycopy(b, 0, result, a.length, b.length);
+        return result;
     }
 
     public String getId() {
@@ -39,12 +43,20 @@ public class Transaction {
         return amount;
     }
 
-    public byte[] getSignature() {
-        return signature;
+    public byte[] getSourceSignature() {
+        return sourceSignature;
     }
 
-    public void setSignature(byte[] signature) {
-        this.signature = signature;
+    public void setSourceSignature(byte[] sourceSignature) {
+        this.sourceSignature = sourceSignature;
+    }
+
+    public byte[] getDestinationSignature() {
+        return destinationSignature;
+    }
+
+    public void setDestinationSignature(byte[] destinationSignature) {
+        this.destinationSignature = destinationSignature;
     }
 
     @Override
@@ -52,14 +64,23 @@ public class Transaction {
         return uid + source.getFingerprint() + destination.getFingerprint() + String.valueOf(amount);
     }
 
-    public void sign(PrivateKey privateKey)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        this.signature = CryptoUtils.sign(privateKey, this.toString().getBytes());
+    public byte[] getData() {
+        return toString().getBytes();
     }
 
-    public boolean validate(PublicKey publicKey)
+    // TODO: maybe sign whole transaction instead of only ID?
+    public byte[] getSignedData() {
+        return uid.getBytes();
+    }
+
+    public boolean validateSource(PublicKey sourceKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        return CryptoUtils.verifySignature(publicKey, this.toString().getBytes(), signature);
+        return CryptoUtils.verifySignature(sourceKey, getData(), sourceSignature);
+    }
+
+    public boolean validateDestination(PublicKey destinationKey)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        return CryptoUtils.verifySignature(destinationKey, getSignedData(), destinationSignature);
     }
 
 }

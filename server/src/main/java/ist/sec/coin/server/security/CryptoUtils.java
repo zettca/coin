@@ -34,7 +34,7 @@ public final class CryptoUtils {
     }
 
     public static String getPublicKeyFingerprint(PublicKey publicKey) throws NoSuchAlgorithmException {
-        return DatatypeConverter.printBase64Binary(digest(publicKey.getEncoded()));
+        return DatatypeConverter.printHexBinary(digest(publicKey.getEncoded()));
     }
 
     public static Certificate getCertificateFromString(String certString) throws CertificateException {

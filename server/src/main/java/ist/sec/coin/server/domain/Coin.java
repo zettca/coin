@@ -30,7 +30,6 @@ public class Coin {
         if (instance == null) {
             instance = new Coin();
         }
-
         return instance;
     }
 
@@ -38,9 +37,8 @@ public class Coin {
             throws RegisteredAccountException, NoSuchAlgorithmException {
         AccountAddress address = new AccountAddress(cert);
 
-        if (this.accountKeys.containsKey(address) || this.accountKeys.containsValue(cert) ||
-                this.accountLedgers.containsKey(address)) {
-            throw new RegisteredAccountException();
+        if (this.accountKeys.containsKey(address) || this.accountLedgers.containsKey(address)) {
+            throw new RegisteredAccountException("Account is already registered");
         } else {
             this.accountKeys.put(address, cert);
             this.accountLedgers.put(address, new Ledger(address, STARTING_BALANCE));
@@ -51,20 +49,37 @@ public class Coin {
     public synchronized void startTransaction(Transaction transaction)
             throws NonExistentAccountException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
             TamperingException, InvalidAmountException {
-        Certificate senderCertificate = getCertificate(transaction.getSource());
-        Certificate receiverCertificate = getCertificate(transaction.getDestination());
+        Certificate senderCertificate = this.getCertificate(transaction.getSource());
+        Certificate receiverCertificate = this.getCertificate(transaction.getDestination());
 
-        if (!transaction.validate(senderCertificate.getPublicKey()) || this.transactionIdExists(transaction)) {
-            throw new TamperingException();
+        if (!transaction.validateSource(senderCertificate.getPublicKey())) {
+            throw new TamperingException("Sender signature is incorrect");
+        } else if (this.transactionIdExists(transaction)) {
+            throw new TamperingException("Transaction identifier already registered");
         } else if (this.getLedger(transaction.getSource()).getBalance() < transaction.getAmount()) {
-            throw new InvalidAmountException();
+            throw new InvalidAmountException("Sender does not have enough funds");
         } else {
             this.pendingTransactions.put(transaction.getId(), transaction);
         }
     }
 
-    public synchronized void commitTransaction(AccountAddress address) {
+    public synchronized void commitTransaction(Transaction transaction)
+            throws NonExistentAccountException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
+            TamperingException {
+        Certificate senderCertificate = this.getCertificate(transaction.getSource());
+        Certificate receiverCertificate = this.getCertificate(transaction.getDestination());
+        Ledger sourceLedger = this.getLedger(transaction.getSource());
+        Ledger destinationLedger = this.getLedger(transaction.getDestination());
 
+        if (!transaction.validateSource(senderCertificate.getPublicKey())) {
+            throw new TamperingException("Sender signature is incorrect");
+        } else if (!transaction.validateDestination(receiverCertificate.getPublicKey())) {
+            throw new TamperingException("Receiver signature is incorrect");
+        } else {
+            this.pendingTransactions.remove(transaction.getId());
+            sourceLedger.addTransaction(transaction);
+            destinationLedger.addTransaction(transaction);
+        }
     }
 
     public synchronized int getAccountBalance(AccountAddress address) throws NonExistentAccountException {
@@ -96,6 +111,17 @@ public class Coin {
         accountKeys.clear();
         accountLedgers.clear();
         pendingTransactions.clear();
+    }
+
+    public synchronized Transaction getPendingTransaction(String tid) throws Exception {
+        Transaction transaction = this.pendingTransactions.get(tid);
+
+        if (transaction != null) {
+            return transaction;
+        } else {
+            //TODO: improve exception type
+            throw new Exception("Transaction ID does not match to a Transaction");
+        }
     }
 
     private Ledger getLedger(AccountAddress address) throws NonExistentAccountException {

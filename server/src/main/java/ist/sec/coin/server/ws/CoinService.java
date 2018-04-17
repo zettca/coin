@@ -39,7 +39,8 @@ public interface CoinService {
 
     @WebMethod
     void receiveAmount(
-            @WebParam(name = "address") String address)
+            @WebParam(name = "transactionId") String transactionId,
+            @WebParam(name = "signature") byte[] signature)
             throws ReceiveAmountException;
 
     @WebMethod
