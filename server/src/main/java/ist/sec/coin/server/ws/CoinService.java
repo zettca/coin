@@ -1,6 +1,5 @@
 package ist.sec.coin.server.ws;
 
-import ist.sec.coin.server.domain.Transaction;
 import ist.sec.coin.server.ws.exception.*;
 
 import javax.jws.WebMethod;
@@ -20,35 +19,31 @@ public interface CoinService {
 
     @WebMethod
     String register(
-            @WebParam(name = "certificate") String certString
-    ) throws RegisterException;
+            @WebParam(name = "certificate") String certString)
+            throws RegisterException;
 
     @WebMethod
     void sendAmount(
-            @WebParam(name = "uid") String uid,
-            @WebParam(name = "source") String source,
-            @WebParam(name = "destination") String destination,
-            @WebParam(name = "amount") int amount,
-            @WebParam(name = "signature") byte[] signature)
+            @WebParam(name = "transaction") TransactionData transaction)
             throws SendAmountException;
 
     @WebMethod
-    AccountStatus checkAccount(
-            @WebParam(name = "address") String address)
+    AccountStatusData checkAccount(
+            @WebParam(name = "fingerprint") String fingerprint)
             throws CheckAccountException;
 
     @WebMethod
     void receiveAmount(
-            @WebParam(name = "transactionId") String transactionId,
-            @WebParam(name = "signature") byte[] signature)
+            @WebParam(name = "transaction") TransactionData transaction)
             throws ReceiveAmountException;
 
     @WebMethod
-    ArrayList<Transaction> audit(
+    ArrayList<TransactionData> audit(
             @WebParam(name = "address") String address)
             throws AuditException;
 
-    // Used for testing
+    // ===== Used for testing
+
     @WebMethod
     void clean();
 }

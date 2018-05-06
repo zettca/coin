@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.List;
 
 @WebService(endpointInterface = "ist.sec.coin.server.ws.CoinService")
 public class CoinServiceImpl implements CoinService {
@@ -44,50 +45,51 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public void sendAmount(String uid, String source, String destination, int amount, byte[] signature)
+    public void sendAmount(TransactionData transactionData)
             throws SendAmountException {
         try {
-            Transaction transaction = new Transaction(
-                    uid, new AccountAddress(source), new AccountAddress(destination), amount);
-            transaction.setSourceSignature(signature);
+            Transaction transaction = newTransaction(transactionData);
             coin.startTransaction(transaction);
         } catch (CoinException e) {
             throw new SendAmountException(e.getMessage());
-        } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
+            throw new SendAmountException(e.getMessage());
+        } catch (SignatureException e) {
+            e.printStackTrace();
             throw new SendAmountException(e.getMessage());
         }
     }
 
     @Override
-    public AccountStatus checkAccount(String address) throws CheckAccountException {
+    public AccountStatusData checkAccount(String address) throws CheckAccountException {
         try {
             AccountAddress accountAddress = new AccountAddress(address);
             int balance = coin.getAccountBalance(accountAddress);
-            ArrayList<Transaction> pendingTransactions = coin.getAccountPendingTransactions(accountAddress);
-            return new AccountStatus(balance, pendingTransactions);
+            List<Transaction> pendingTransactions = coin.getAccountPendingTransactions(accountAddress);
+            return newAccountStatusData(balance, pendingTransactions);
         } catch (CoinException e) {
             throw new CheckAccountException(e.getMessage());
         }
     }
 
     @Override
-    public void receiveAmount(String transactionId, byte[] signature) throws ReceiveAmountException {
+    public void receiveAmount(TransactionData transactionData) throws ReceiveAmountException {
         try {
-            Transaction transaction = coin.getPendingTransaction(transactionId);
-            transaction.setDestinationSignature(signature);
+            Transaction transaction = newTransaction(transactionData);
             coin.commitTransaction(transaction);
         } catch (CoinException e) {
             throw new ReceiveAmountException(e.getMessage());
         } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
             throw new ReceiveAmountException(e.getMessage());
         }
-
     }
 
     @Override
-    public ArrayList<Transaction> audit(String address) throws AuditException {
+    public ArrayList<TransactionData> audit(String address) throws AuditException {
         try {
-            return coin.getAccountTransactions(new AccountAddress(address));
+            List<Transaction> accountTransactions = coin.getAccountTransactions(new AccountAddress(address));
+            return (ArrayList<TransactionData>) newListTransactionData(accountTransactions);
         } catch (CoinException e) {
             throw new AuditException(e.getMessage());
         }
@@ -95,6 +97,52 @@ public class CoinServiceImpl implements CoinService {
 
     @Override
     public void clean() {
+        System.out.println("Clearing all data...");
         coin.clean();
+    }
+
+    // ===== Data Constructors
+
+    private Transaction newTransaction(TransactionData transactionData) {
+        Transaction trans = new Transaction(
+                transactionData.getUid(),
+                new AccountAddress(transactionData.getSource()),
+                new AccountAddress(transactionData.getDestination()),
+                transactionData.getAmount());
+        trans.setSourceSignature(transactionData.getSourceSignature());
+        trans.setDestinationSignature(transactionData.getDestinationSignature());
+        return trans;
+    }
+
+    private TransactionData newTransactionData(Transaction transaction) {
+        TransactionData trans = new TransactionData();
+        trans.setUid(transaction.getId());
+        trans.setSource(transaction.getSource().getFingerprint());
+        trans.setDestination(transaction.getDestination().getFingerprint());
+        trans.setAmount(transaction.getAmount());
+        trans.setSourceSignature(transaction.getSourceSignature());
+        trans.setDestinationSignature(transaction.getDestinationSignature());
+        return trans;
+    }
+
+    private AccountStatusData newAccountStatusData(int balance, List<Transaction> pendingTransactions) {
+        AccountStatusData accountStatusData = new AccountStatusData();
+        List<TransactionData> transactions = new ArrayList<>();
+
+        for (Transaction transaction : pendingTransactions) {
+            transactions.add(newTransactionData(transaction));
+        }
+
+        accountStatusData.setBalance(balance);
+        accountStatusData.setPendingTransactions(transactions);
+        return accountStatusData;
+    }
+
+    private List<TransactionData> newListTransactionData(List<Transaction> transactions) {
+        List<TransactionData> transactionDataList = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            transactionDataList.add(newTransactionData(transaction));
+        }
+        return transactionDataList;
     }
 }

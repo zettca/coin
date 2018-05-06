@@ -25,19 +25,19 @@ public class CoinClient implements CoinService {
     }
 
     @Override
-    public void sendAmount(String uid, String source, String destination, int amount, byte[] signature)
+    public void sendAmount(TransactionData transactionData)
             throws SendAmountException_Exception {
-        port.sendAmount(uid, source, destination, amount, signature);
+        port.sendAmount(transactionData);
     }
 
     @Override
-    public AccountStatus checkAccount(String address) throws CheckAccountException_Exception {
+    public AccountStatusData checkAccount(String address) throws CheckAccountException_Exception {
         return port.checkAccount(address);
     }
 
     @Override
-    public void receiveAmount(String transactionId, byte[] signature) throws ReceiveAmountException_Exception {
-        port.receiveAmount(transactionId, signature);
+    public void receiveAmount(TransactionData transactionData) throws ReceiveAmountException_Exception {
+        port.receiveAmount(transactionData);
     }
 
     @Override
@@ -48,5 +48,11 @@ public class CoinClient implements CoinService {
     @Override
     public void clean() {
         port.clean();
+    }
+
+    // helpers
+    public byte[] transactionDataBytes(TransactionData t) {
+        String s = t.getUid() + t.getSource() + t.getDestination() + String.valueOf(t.getAmount());
+        return s.getBytes();
     }
 }

@@ -1,31 +1,25 @@
 package ist.sec.coin.server.domain;
 
-import ist.sec.coin.server.domain.exception.CoinException;
 import ist.sec.coin.server.security.CryptoUtils;
 
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 
 public class AccountAddress {
     private final String fingerprint;
 
-    public AccountAddress(String fingerprint) throws CoinException {
+    public AccountAddress(String fingerprint) {
         if (fingerprint == null || fingerprint.trim().isEmpty()) {
-            throw new CoinException("invalid argument");
+            throw new IllegalArgumentException("invalid argument");
         }
         this.fingerprint = fingerprint;
     }
 
-    public AccountAddress(PublicKey publicKey) throws NoSuchAlgorithmException, CoinException {
-        if (publicKey == null) {
-            throw new CoinException("invalid argument");
+    public AccountAddress(Certificate cert) throws NoSuchAlgorithmException {
+        if (cert == null) {
+            throw new IllegalArgumentException("invalid argument");
         }
-        this.fingerprint = CryptoUtils.getPublicKeyFingerprint(publicKey);
-    }
-
-    public AccountAddress(Certificate cert) throws NoSuchAlgorithmException, CoinException {
-        this(cert.getPublicKey());
+        this.fingerprint = CryptoUtils.getPublicKeyFingerprint(cert.getPublicKey());
     }
 
     public String getFingerprint() {

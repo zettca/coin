@@ -8,13 +8,14 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Coin {
     private static final int STARTING_BALANCE = 10;
     private static Coin instance;
 
-    private HashMap<AccountAddress, Certificate> accountKeys;
-    private HashMap<AccountAddress, Ledger> accountLedgers;
+    private HashMap<String, Certificate> accountKeys;
+    private HashMap<String, Ledger> accountLedgers;
     private HashMap<String, Transaction> pendingTransactions;
 
     private Coin() {
@@ -31,14 +32,14 @@ public class Coin {
     }
 
     public synchronized AccountAddress registerAccount(Certificate cert)
-            throws CoinException, NoSuchAlgorithmException {
+            throws RegisteredAccountException, NoSuchAlgorithmException {
         AccountAddress address = new AccountAddress(cert);
 
-        if (this.accountKeys.containsKey(address) || this.accountLedgers.containsKey(address)) {
+        if (this.accountKeys.containsKey(address.getFingerprint()) || this.accountLedgers.containsKey(address.getFingerprint())) {
             throw new RegisteredAccountException("Account is already registered");
         } else {
-            this.accountKeys.put(address, cert);
-            this.accountLedgers.put(address, new Ledger(address, STARTING_BALANCE));
+            this.accountKeys.put(address.getFingerprint(), cert);
+            this.accountLedgers.put(address.getFingerprint(), new Ledger(address, STARTING_BALANCE));
             return address;
         }
     }
@@ -83,16 +84,16 @@ public class Coin {
         return this.getLedger(address).getBalance();
     }
 
-    public synchronized ArrayList<Transaction> getAccountTransactions(AccountAddress address)
+    public synchronized List<Transaction> getAccountTransactions(AccountAddress address)
             throws NonExistentAccountException {
         return this.getLedger(address).getTransactions();
     }
 
-    public synchronized ArrayList<Transaction> getAccountPendingTransactions(AccountAddress address)
+    public synchronized List<Transaction> getAccountPendingTransactions(AccountAddress address)
             throws NonExistentAccountException {
         this.getLedger(address); // test account if exists
 
-        ArrayList<Transaction> transactions = new ArrayList<>();
+        List<Transaction> transactions = new ArrayList<>();
         for (Transaction transaction : this.pendingTransactions.values()) {
             if (transaction.getDestination().equals(address)) {
                 transactions.add(transaction);
@@ -121,7 +122,7 @@ public class Coin {
     }
 
     private Ledger getLedger(AccountAddress address) throws NonExistentAccountException {
-        Ledger ledger = this.accountLedgers.get(address);
+        Ledger ledger = this.accountLedgers.get(address.getFingerprint());
 
         if (ledger != null) {
             return ledger;
@@ -131,7 +132,7 @@ public class Coin {
     }
 
     private Certificate getCertificate(AccountAddress address) throws NonExistentAccountException {
-        Certificate key = this.accountKeys.get(address);
+        Certificate key = this.accountKeys.get(address.getFingerprint());
 
         if (key != null) {
             return key;
