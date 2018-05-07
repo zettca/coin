@@ -52,10 +52,7 @@ public class CoinServiceImpl implements CoinService {
             coin.startTransaction(transaction);
         } catch (CoinException e) {
             throw new SendAmountException(e.getMessage());
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            e.printStackTrace();
-            throw new SendAmountException(e.getMessage());
-        } catch (SignatureException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
             e.printStackTrace();
             throw new SendAmountException(e.getMessage());
         }
@@ -67,7 +64,7 @@ public class CoinServiceImpl implements CoinService {
             AccountAddress accountAddress = new AccountAddress(address);
             int balance = coin.getAccountBalance(accountAddress);
             List<Transaction> pendingTransactions = coin.getAccountPendingTransactions(accountAddress);
-            return newAccountStatusData(balance, pendingTransactions);
+            return newAccountStatusView(balance, pendingTransactions);
         } catch (CoinException e) {
             throw new CheckAccountException(e.getMessage());
         }
@@ -81,15 +78,16 @@ public class CoinServiceImpl implements CoinService {
         } catch (CoinException e) {
             throw new ReceiveAmountException(e.getMessage());
         } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
+            e.printStackTrace();
             throw new ReceiveAmountException(e.getMessage());
         }
     }
 
     @Override
-    public ArrayList<TransactionView> audit(String address) throws AuditException {
+    public AuditView audit(String address) throws AuditException {
         try {
             List<Transaction> accountTransactions = coin.getAccountDoneTransactions(new AccountAddress(address));
-            return (ArrayList<TransactionView>) newListTransactionData(accountTransactions);
+            return newAuditView(accountTransactions);
         } catch (CoinException e) {
             throw new AuditException(e.getMessage());
         }
@@ -114,7 +112,7 @@ public class CoinServiceImpl implements CoinService {
         return trans;
     }
 
-    private TransactionView newTransactionData(Transaction transaction) {
+    private TransactionView newTransactionView(Transaction transaction) {
         TransactionView trans = new TransactionView();
         trans.setUid(transaction.getId());
         trans.setSource(transaction.getSource().getFingerprint());
@@ -125,12 +123,12 @@ public class CoinServiceImpl implements CoinService {
         return trans;
     }
 
-    private AccountStatusView newAccountStatusData(int balance, List<Transaction> pendingTransactions) {
+    private AccountStatusView newAccountStatusView(int balance, List<Transaction> pendingTransactions) {
         AccountStatusView accountStatusView = new AccountStatusView();
         List<TransactionView> transactions = new ArrayList<>();
 
         for (Transaction transaction : pendingTransactions) {
-            transactions.add(newTransactionData(transaction));
+            transactions.add(newTransactionView(transaction));
         }
 
         accountStatusView.setBalance(balance);
@@ -138,10 +136,22 @@ public class CoinServiceImpl implements CoinService {
         return accountStatusView;
     }
 
-    private List<TransactionView> newListTransactionData(List<Transaction> transactions) {
+    private AuditView newAuditView(List<Transaction> transactions) {
+        AuditView auditView = new AuditView();
+        List<TransactionView> transactionViews = new ArrayList<>();
+
+        for (Transaction transaction : transactions) {
+            transactionViews.add(newTransactionView(transaction));
+        }
+
+        auditView.setTransactions(transactionViews);
+        return auditView;
+    }
+
+    private List<TransactionView> newListTransactionView(List<Transaction> transactions) {
         List<TransactionView> transactionViewList = new ArrayList<>();
         for (Transaction transaction : transactions) {
-            transactionViewList.add(newTransactionData(transaction));
+            transactionViewList.add(newTransactionView(transaction));
         }
         return transactionViewList;
     }

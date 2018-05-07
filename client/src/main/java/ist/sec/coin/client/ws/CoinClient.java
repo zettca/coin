@@ -40,7 +40,7 @@ public class CoinClient implements CoinService {
     }
 
     @Override
-    public ArrayList audit(String address) throws AuditException_Exception {
+    public AuditView audit(String address) throws AuditException_Exception {
         return port.audit(address);
     }
 

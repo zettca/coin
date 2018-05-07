@@ -1,6 +1,7 @@
 package ist.sec.coin.client.it;
 
 import ist.sec.coin.server.ws.*;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class AuditTest extends BaseServiceIT {
     }
 
     @Test
-    public void testValidAccountHistory() throws SendAmountException_Exception, ReceiveAmountException_Exception,
+    public void testAudit() throws SendAmountException_Exception, ReceiveAmountException_Exception,
             AuditException_Exception, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         TransactionView t1 = newSignedTransactionView(accounts[0], accounts[1], 2, keys[0].getPrivate());
         TransactionView t2 = newSignedTransactionView(accounts[0], accounts[2], 2, keys[0].getPrivate());
@@ -39,8 +40,12 @@ public class AuditTest extends BaseServiceIT {
         client.receiveAmount(t1);
         client.receiveAmount(t2);
 
-        ArrayList audit1 = client.audit(accounts[0]);
-        ArrayList audit2 = client.audit(accounts[1]);
+        AuditView audit0 = client.audit(accounts[0]);
+        AuditView audit1 = client.audit(accounts[1]);
+        AuditView audit2 = client.audit(accounts[2]);
 
+        Assert.assertEquals(2, audit0.getTransactions().size());
+        Assert.assertEquals(1, audit1.getTransactions().size());
+        Assert.assertEquals(1, audit2.getTransactions().size());
     }
 }

@@ -6,7 +6,6 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
-import java.util.ArrayList;
 
 @WebService
 @SOAPBinding(style = SOAPBinding.Style.RPC, use = SOAPBinding.Use.ENCODED)
@@ -38,7 +37,7 @@ public interface CoinService {
             throws ReceiveAmountException;
 
     @WebMethod
-    ArrayList<TransactionView> audit(
+    AuditView audit(
             @WebParam(name = "address") String address)
             throws AuditException;
 
