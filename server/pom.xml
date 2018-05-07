@@ -14,10 +14,13 @@
     <properties>
         <mainclass>ist.sec.coin.server.ws.CoinServiceApp</mainclass>
 
-        <ws.name>coin</ws.name>
+        <ws.i>0</ws.i>
+        <ws.name>coin${ws.i}</ws.name>
         <ws.host>localhost</ws.host>
-        <ws.port>8090</ws.port>
+        <ws.port>809${ws.i}</ws.port>
         <ws.url>http://${ws.host}:${ws.port}/ws/${ws.name}</ws.url>
+
+        <uddi.url>http://localhost:9090/</uddi.url>
     </properties>
 
     <dependencies>
@@ -32,6 +35,11 @@
             <artifactId>jaxws-rt</artifactId>
             <version>2.3.0</version>
             <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>pt.ulisboa.tecnico.sdis</groupId>
+            <artifactId>uddi-naming</artifactId>
+            <version>1.2</version>
         </dependency>
     </dependencies>
 
@@ -57,7 +65,9 @@
                 <configuration>
                     <mainClass>${mainclass}</mainClass>
                     <arguments>
+                        <argument>${uddi.url}</argument>
                         <argument>${ws.url}</argument>
+                        <argument>${ws.name}</argument>
                     </arguments>
                 </configuration>
             </plugin>
