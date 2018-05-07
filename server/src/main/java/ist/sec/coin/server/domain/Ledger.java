@@ -7,7 +7,7 @@ public class Ledger {
     private final ArrayList<Transaction> transactions;
     private int balance;
 
-    public Ledger(AccountAddress address, int amount) {
+    Ledger(AccountAddress address, int amount) {
         this.address = address;
         this.transactions = new ArrayList<>();
         this.balance = amount;
@@ -17,16 +17,20 @@ public class Ledger {
         return address;
     }
 
-    public ArrayList<Transaction> getTransactions() {
+    ArrayList<Transaction> getTransactions() {
         return transactions;
     }
 
-    public int getBalance() {
+    int getBalance() {
         return balance;
     }
 
-    public void addTransaction(Transaction transaction) {
+    void addTransaction(Transaction transaction) {
         this.transactions.add(transaction);
-        this.balance += transaction.getAmount();
+        if (transaction.getDestination().equals(address)) {
+            this.balance += transaction.getAmount();
+        } else if (transaction.getSource().equals(address)) {
+            this.balance -= transaction.getAmount();
+        }
     }
 }
