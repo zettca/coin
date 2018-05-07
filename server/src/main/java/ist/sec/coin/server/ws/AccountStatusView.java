@@ -21,7 +21,7 @@ public class AccountStatusView {
         this.balance = balance;
     }
 
-    @XmlElement(name = "transaction")
+    @XmlElement(name = "transactions")
     public List<TransactionView> getPendingTransactions() {
         return pendingTransactions;
     }

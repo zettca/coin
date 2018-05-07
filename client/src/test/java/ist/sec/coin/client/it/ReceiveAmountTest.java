@@ -37,8 +37,8 @@ public class ReceiveAmountTest extends BaseServiceIT {
 
         AccountStatusView status0 = client.checkAccount(accounts[0]);
         AccountStatusView status1 = client.checkAccount(accounts[0]);
-        Assert.assertEquals(1, status0.getTransaction().size());
-        Assert.assertEquals(1, status1.getTransaction().size());
+        Assert.assertEquals(1, status0.getTransactions().size());
+        Assert.assertEquals(1, status1.getTransactions().size());
         // balance only decreases after commit
         Assert.assertEquals(balance0, status0.getBalance());
         Assert.assertEquals(balance1, status1.getBalance());
@@ -48,8 +48,8 @@ public class ReceiveAmountTest extends BaseServiceIT {
 
         status0 = client.checkAccount(accounts[0]);
         status1 = client.checkAccount(accounts[1]);
-        Assert.assertEquals(0, status0.getTransaction().size()); // cleared pending transactions
-        Assert.assertEquals(0, status1.getTransaction().size()); // cleared pending transactions
+        Assert.assertEquals(0, status0.getTransactions().size()); // cleared pending transactions
+        Assert.assertEquals(0, status1.getTransactions().size()); // cleared pending transactions
         Assert.assertEquals(balance0 - amount, status0.getBalance());
         Assert.assertEquals(balance1 + amount, status1.getBalance());
     }

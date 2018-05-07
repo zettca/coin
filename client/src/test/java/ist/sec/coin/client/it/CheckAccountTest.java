@@ -50,7 +50,7 @@ public class CheckAccountTest extends BaseServiceIT {
     @Test
     public void testAccountNoTransactions() throws CheckAccountException_Exception {
         AccountStatusView accountData = client.checkAccount(accounts[0]);
-        List<TransactionView> transactions = accountData.getTransaction();
+        List<TransactionView> transactions = accountData.getTransactions();
         Assert.assertTrue(transactions.isEmpty());
     }
 
@@ -61,7 +61,7 @@ public class CheckAccountTest extends BaseServiceIT {
         client.sendAmount(t);
 
         AccountStatusView accountData = client.checkAccount(accounts[0]);
-        List<TransactionView> transactions = accountData.getTransaction();
+        List<TransactionView> transactions = accountData.getTransactions();
 
         Assert.assertEquals(1, transactions.size());
     }
@@ -74,7 +74,7 @@ public class CheckAccountTest extends BaseServiceIT {
             client.sendAmount(newSignedTransactionView(accounts[0], accounts[1], 1, keys[0].getPrivate()));
         }
 
-        Assert.assertEquals(NUM_TRANSACTIONS, client.checkAccount(accounts[0]).getTransaction().size());
+        Assert.assertEquals(NUM_TRANSACTIONS, client.checkAccount(accounts[0]).getTransactions().size());
     }
 
     @Test
@@ -85,8 +85,8 @@ public class CheckAccountTest extends BaseServiceIT {
             client.sendAmount(newSignedTransactionView(accounts[0], accounts[1], 1, keys[0].getPrivate()));
         }
 
-        Assert.assertEquals(NUM_TRANSACTIONS, client.checkAccount(accounts[0]).getTransaction().size());
-        Assert.assertEquals(NUM_TRANSACTIONS, client.checkAccount(accounts[1]).getTransaction().size());
+        Assert.assertEquals(NUM_TRANSACTIONS, client.checkAccount(accounts[0]).getTransactions().size());
+        Assert.assertEquals(NUM_TRANSACTIONS, client.checkAccount(accounts[1]).getTransactions().size());
     }
 
     @Test
