@@ -28,6 +28,13 @@ public class RegisterTest extends BaseServiceIT {
         client.register(keys[0].getPublic().getEncoded());
     }
 
+    @Test
+    public void testMultipleAccounts() throws RegisterException_Exception {
+        client.register(keys[0].getPublic().getEncoded());
+        client.register(keys[1].getPublic().getEncoded());
+        client.register(keys[2].getPublic().getEncoded());
+    }
+
     @Test(expected = RegisterException_Exception.class)
     public void testAlreadyRegisteredPublicKey() throws RegisterException_Exception {
         PublicKey key = keys[1].getPublic();

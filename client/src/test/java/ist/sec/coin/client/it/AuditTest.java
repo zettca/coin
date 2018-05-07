@@ -27,8 +27,8 @@ public class AuditTest extends BaseServiceIT {
     @Test
     public void testValidAccountHistory() throws SendAmountException_Exception, ReceiveAmountException_Exception,
             AuditException_Exception, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        TransactionView t1 = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
-        TransactionView t2 = newSignedTransactionData(accounts[0], accounts[2], 2, keys[0].getPrivate());
+        TransactionView t1 = newSignedTransactionView(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        TransactionView t2 = newSignedTransactionView(accounts[0], accounts[2], 2, keys[0].getPrivate());
 
         client.sendAmount(t1);
         client.sendAmount(t2);

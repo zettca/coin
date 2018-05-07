@@ -5,26 +5,21 @@ import ist.sec.coin.server.security.CryptoUtils;
 import ist.sec.coin.server.ws.TransactionView;
 import org.junit.BeforeClass;
 
-import javax.xml.bind.DatatypeConverter;
 import java.security.*;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.util.Properties;
 import java.util.UUID;
 
 public class BaseServiceIT {
     static CoinClient client;
     static Properties properties;
-    static KeyStore keyStore;
     static KeyPair[] keys;
 
     @BeforeClass
     public static void oneTimeSetup() {
+        final int NUM_ACCOUNTS = 3;
         properties = new Properties();
         client = new CoinClient();
-        keys = new KeyPair[3];
+        keys = new KeyPair[NUM_ACCOUNTS];
 
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance(CryptoUtils.KEY_GEN_ALGORITHM);
@@ -40,29 +35,7 @@ public class BaseServiceIT {
 
     /* ========== helpers ========== */
 
-    static Certificate loadCertificateFromFile(String certFile) throws CertificateException {
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        return cf.generateCertificate(BaseServiceIT.class.getResourceAsStream("/accounts/" + certFile));
-    }
-
-    static String encodeCertificate(Certificate cert) throws CertificateEncodingException {
-        return DatatypeConverter.printBase64Binary(cert.getEncoded());
-    }
-
-    static String loadEncodedCertificateFromFile(String certFile) throws CertificateException {
-        return encodeCertificate(loadCertificateFromFile(certFile));
-    }
-
-    static Certificate getCertificateFromKeyStore(String alias) throws KeyStoreException {
-        return keyStore.getCertificate(alias);
-    }
-
-    static PrivateKey getPrivateKeyFromKeyStore(String alias, String password) throws KeyStoreException,
-            UnrecoverableKeyException, NoSuchAlgorithmException {
-        return (PrivateKey) keyStore.getKey(alias, password.toCharArray());
-    }
-
-    static TransactionView newTransactionData(String source, String dest, int amount) {
+    static TransactionView newTransactionView(String source, String dest, int amount) {
         TransactionView t = new TransactionView();
         t.setUid(UUID.randomUUID().toString());
         t.setSource(source);
@@ -92,13 +65,9 @@ public class BaseServiceIT {
     }
 
 
-    static TransactionView newSignedTransactionData(String source, String dest, int amount, PrivateKey key)
+    static TransactionView newSignedTransactionView(String source, String dest, int amount, PrivateKey key)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        TransactionView t = newTransactionData(source, dest, amount);
+        TransactionView t = newTransactionView(source, dest, amount);
         return signSource(t, key);
-    }
-
-    static TransactionView newTransactionData(TransactionView t) {
-        return newTransactionData(t.getSource(), t.getDestination(), t.getAmount());
     }
 }

@@ -20,7 +20,7 @@ public class SendAmountTest extends BaseServiceIT {
 
     @Before
     public void createAccounts() throws RegisterException_Exception {
-        int NUM_ACCOUNTS = 3;
+        final int NUM_ACCOUNTS = 3;
         for (int i = 0; i < NUM_ACCOUNTS && i < keys.length; i++) {
             accounts[i] = client.register(keys[i].getPublic().getEncoded());
         }
@@ -28,40 +28,40 @@ public class SendAmountTest extends BaseServiceIT {
 
     @Test(expected = SendAmountException_Exception.class)
     public void testNegativeAmount() throws SendAmountException_Exception {
-        client.sendAmount(newTransactionData(accounts[0], accounts[1], -4));
+        client.sendAmount(newTransactionView(accounts[0], accounts[1], -4));
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testZeroAmount() throws SendAmountException_Exception {
-        client.sendAmount(newTransactionData(accounts[0], accounts[1], 0));
+        client.sendAmount(newTransactionView(accounts[0], accounts[1], 0));
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testInvalidSignature() throws SendAmountException_Exception {
-        client.sendAmount(newTransactionData(accounts[0], accounts[1], 1));
+        client.sendAmount(newTransactionView(accounts[0], accounts[1], 1));
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testInvalidSender() throws SendAmountException_Exception {
-        client.sendAmount(newTransactionData("123", accounts[1], 1));
+        client.sendAmount(newTransactionView("123", accounts[1], 1));
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testInvalidReceiver() throws SendAmountException_Exception {
-        client.sendAmount(newTransactionData(accounts[0], "123", 1));
+        client.sendAmount(newTransactionView(accounts[0], "123", 1));
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testSendToSelf() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionView t = newSignedTransactionData(accounts[0], accounts[0], 1, keys[0].getPrivate());
+        TransactionView t = newSignedTransactionView(accounts[0], accounts[0], 1, keys[0].getPrivate());
         client.sendAmount(t);
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testWrongAmountSignature() throws SendAmountException_Exception, NoSuchAlgorithmException,
             SignatureException, InvalidKeyException {
-        TransactionView t = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        TransactionView t = newSignedTransactionView(accounts[0], accounts[1], 2, keys[0].getPrivate());
         t.setAmount(t.getAmount() + 1);
         client.sendAmount(t);
     }
@@ -69,22 +69,21 @@ public class SendAmountTest extends BaseServiceIT {
     @Test(expected = SendAmountException_Exception.class)
     public void testInvalidAmount() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionView t = newSignedTransactionData(accounts[1], accounts[2], 9001, keys[1].getPrivate());
-        client.sendAmount(t);
+        TransactionView trans = newSignedTransactionView(accounts[1], accounts[2], 9001, keys[1].getPrivate());
+        client.sendAmount(trans);
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testWrongKeySign() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionView trans = newSignedTransactionData(accounts[0], accounts[1], 1, keys[1].getPrivate());
-
+        TransactionView trans = newSignedTransactionView(accounts[0], accounts[1], 1, keys[1].getPrivate());
         client.sendAmount(trans);
     }
 
     @Test
     public void testValidSend() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionView trans = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        TransactionView trans = newSignedTransactionView(accounts[0], accounts[1], 2, keys[0].getPrivate());
         client.sendAmount(trans);
     }
 }

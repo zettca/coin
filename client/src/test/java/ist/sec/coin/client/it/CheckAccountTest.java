@@ -55,9 +55,9 @@ public class CheckAccountTest extends BaseServiceIT {
     }
 
     @Test
-    public void testAccountReturnsTransactions() throws CheckAccountException_Exception, NoSuchAlgorithmException,
+    public void testAccountReturnsAnyTransactions() throws CheckAccountException_Exception, NoSuchAlgorithmException,
             SignatureException, InvalidKeyException, SendAmountException_Exception {
-        TransactionView t = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        TransactionView t = newSignedTransactionView(accounts[0], accounts[1], 2, keys[0].getPrivate());
         client.sendAmount(t);
 
         AccountStatusView accountData = client.checkAccount(accounts[0]);
@@ -67,17 +67,46 @@ public class CheckAccountTest extends BaseServiceIT {
     }
 
     @Test
+    public void testAccountReturnsMultipleTransactions() throws CheckAccountException_Exception,
+            NoSuchAlgorithmException, SignatureException, InvalidKeyException, SendAmountException_Exception {
+        final int NUM_TRANSACTIONS = 4;
+        for (int i = 0; i < NUM_TRANSACTIONS; i++) {
+            client.sendAmount(newSignedTransactionView(accounts[0], accounts[1], 1, keys[0].getPrivate()));
+        }
+
+        AccountStatusView accountData = client.checkAccount(accounts[0]);
+        List<TransactionView> transactions = accountData.getTransaction();
+
+        Assert.assertEquals(NUM_TRANSACTIONS, transactions.size());
+    }
+
+    @Test
     public void testAmountDecreases() throws CheckAccountException_Exception, SendAmountException_Exception,
             NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        AccountStatusView accountStatus = client.checkAccount(accounts[0]);
-        int balanceBefore = accountStatus.getBalance();
+        AccountStatusView status = client.checkAccount(accounts[0]);
         int amount = 2;
+        int expectedBalance = status.getBalance() - amount;
 
-        TransactionView trans = newSignedTransactionData(accounts[0], accounts[1], amount, keys[0].getPrivate());
-        client.sendAmount(trans);
+        client.sendAmount(newSignedTransactionView(accounts[0], accounts[1], amount, keys[0].getPrivate()));
 
-        accountStatus = client.checkAccount(accounts[0]);
-        Assert.assertEquals(balanceBefore - amount, accountStatus.getBalance());
+        status = client.checkAccount(accounts[0]);
+        Assert.assertEquals(expectedBalance, status.getBalance());
+    }
+
+    @Test
+    public void testAmountDecreasesMultiple() throws CheckAccountException_Exception, SendAmountException_Exception,
+            NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        final int NUM_TRANSACTIONS = 3;
+        AccountStatusView status = client.checkAccount(accounts[0]);
+        int expectedBalance = status.getBalance(), amount = 2;
+
+        for (int i = 0; i < NUM_TRANSACTIONS; i++) {
+            client.sendAmount(newSignedTransactionView(accounts[0], accounts[1], amount, keys[0].getPrivate()));
+            expectedBalance -= amount;
+        }
+
+        status = client.checkAccount(accounts[0]);
+        Assert.assertEquals(expectedBalance, status.getBalance());
     }
 
 }
