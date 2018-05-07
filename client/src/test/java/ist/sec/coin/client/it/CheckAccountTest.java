@@ -1,6 +1,5 @@
 package ist.sec.coin.client.it;
 
-import ist.sec.coin.server.security.CryptoUtils;
 import ist.sec.coin.server.ws.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -9,7 +8,6 @@ import org.junit.Test;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
-import java.security.cert.CertificateException;
 import java.util.List;
 
 public class CheckAccountTest extends BaseServiceIT {
@@ -21,9 +19,11 @@ public class CheckAccountTest extends BaseServiceIT {
     }
 
     @Before
-    public void createAccounts() throws CertificateException, RegisterException_Exception {
-        accounts[0] = client.register(loadEncodedCertificateFromFile("user1.cer"));
-        accounts[1] = client.register(loadEncodedCertificateFromFile("user2.cer"));
+    public void createAccounts() throws RegisterException_Exception {
+        int NUM_ACCOUNTS = 3;
+        for (int i = 0; i < NUM_ACCOUNTS && i < keys.length; i++) {
+            accounts[i] = client.register(keys[i].getPublic().getEncoded());
+        }
     }
 
     @Test(expected = Exception.class)
@@ -57,14 +57,27 @@ public class CheckAccountTest extends BaseServiceIT {
     @Test
     public void testAccountReturnsTransactions() throws CheckAccountException_Exception, NoSuchAlgorithmException,
             SignatureException, InvalidKeyException, SendAmountException_Exception {
-        TransactionData transactionData = newTransactionData(accounts[0], accounts[1], 2);
-        byte[] signature = CryptoUtils.sign(keys[0], client.transactionDataBytes(transactionData));
-        transactionData.setSourceSignature(signature);
-        client.sendAmount(transactionData);
+        TransactionData t = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        client.sendAmount(t);
 
         AccountStatusData accountData = client.checkAccount(accounts[0]);
         List<TransactionData> transactions = accountData.getTransaction();
+
         Assert.assertEquals(1, transactions.size());
+    }
+
+    @Test
+    public void testAmountDecreases() throws CheckAccountException_Exception, SendAmountException_Exception,
+            NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        AccountStatusData accountStatus = client.checkAccount(accounts[0]);
+        int balanceBefore = accountStatus.getBalance();
+        int amount = 2;
+
+        TransactionData trans = newSignedTransactionData(accounts[0], accounts[1], amount, keys[0].getPrivate());
+        client.sendAmount(trans);
+
+        accountStatus = client.checkAccount(accounts[0]);
+        Assert.assertEquals(balanceBefore - amount, accountStatus.getBalance());
     }
 
 }

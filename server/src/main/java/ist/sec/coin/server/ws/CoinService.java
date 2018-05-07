@@ -19,7 +19,7 @@ public interface CoinService {
 
     @WebMethod
     String register(
-            @WebParam(name = "certificate") String certString)
+            @WebParam(name = "publickey") byte[] publicKeyBytes)
             throws RegisterException;
 
     @WebMethod

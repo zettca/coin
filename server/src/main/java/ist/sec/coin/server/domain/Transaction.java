@@ -64,21 +64,20 @@ public class Transaction {
         return uid + source.getFingerprint() + destination.getFingerprint() + String.valueOf(amount);
     }
 
-    public byte[] getData() {
+    private byte[] getData() {
         return toString().getBytes();
     }
 
-    // TODO: maybe sign whole transaction instead of only ID?
-    public byte[] getSignedData() {
-        return uid.getBytes();
+    private byte[] getSignedData() {
+        return CryptoUtils.mergeByteArray(getData(), this.sourceSignature);
     }
 
-    public boolean validateSource(PublicKey sourceKey)
+    boolean validateSource(PublicKey sourceKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         return CryptoUtils.verifySignature(sourceKey, getData(), sourceSignature);
     }
 
-    public boolean validateDestination(PublicKey destinationKey)
+    boolean validateDestination(PublicKey destinationKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         return CryptoUtils.verifySignature(destinationKey, getSignedData(), destinationSignature);
     }

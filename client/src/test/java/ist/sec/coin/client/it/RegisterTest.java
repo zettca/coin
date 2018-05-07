@@ -4,10 +4,7 @@ import ist.sec.coin.server.ws.RegisterException_Exception;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.security.KeyStoreException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.security.PublicKey;
 
 public class RegisterTest extends BaseServiceIT {
 
@@ -23,27 +20,18 @@ public class RegisterTest extends BaseServiceIT {
 
     @Test(expected = RegisterException_Exception.class)
     public void testRandomStringCertificate() throws RegisterException_Exception {
-        client.register("abc123");
+        client.register("abc123".getBytes());
     }
 
     @Test
-    public void testValidCertificate() throws CertificateException, RegisterException_Exception, KeyStoreException {
-        Certificate cert = getCertificateFromKeyStore("user1");
-        System.out.println(cert);
-        client.register(encodeCertificate(cert));
-    }
-
-    @Test
-    public void testValidX509Certificate() throws CertificateException, RegisterException_Exception, KeyStoreException {
-        X509Certificate cert = (X509Certificate) getCertificateFromKeyStore("user2");
-        client.register(encodeCertificate(cert));
+    public void testValidPublicKey() throws RegisterException_Exception {
+        client.register(keys[0].getPublic().getEncoded());
     }
 
     @Test(expected = RegisterException_Exception.class)
-    public void testAlreadyRegisteredCertificate() throws CertificateException, RegisterException_Exception,
-            KeyStoreException {
-        Certificate cert = getCertificateFromKeyStore("user2");
-        client.register(encodeCertificate(cert));
-        client.register(encodeCertificate(cert));
+    public void testAlreadyRegisteredPublicKey() throws RegisterException_Exception {
+        PublicKey key = keys[1].getPublic();
+        client.register(key.getEncoded());
+        client.register(key.getEncoded());
     }
 }

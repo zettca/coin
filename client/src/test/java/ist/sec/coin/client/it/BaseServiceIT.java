@@ -1,17 +1,16 @@
 package ist.sec.coin.client.it;
 
 import ist.sec.coin.client.ws.CoinClient;
+import ist.sec.coin.server.security.CryptoUtils;
 import ist.sec.coin.server.ws.TransactionData;
 import org.junit.BeforeClass;
 
 import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.Enumeration;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -19,28 +18,22 @@ public class BaseServiceIT {
     static CoinClient client;
     static Properties properties;
     static KeyStore keyStore;
-    static PrivateKey[] keys;
+    static KeyPair[] keys;
 
     @BeforeClass
     public static void oneTimeSetup() {
         properties = new Properties();
         client = new CoinClient();
-        keys = new PrivateKey[3];
+        keys = new KeyPair[3];
+
         try {
-            keyStore = KeyStore.getInstance("PKCS12");
-            keyStore.load(BaseServiceIT.class.getResourceAsStream("/usersKeyStore.p12"), "1nsecur3".toCharArray());
-            System.out.println("Found aliases:");
-            Enumeration<String> aliases = keyStore.aliases();
-            while (aliases.hasMoreElements()) {
-                String alias = aliases.nextElement();
-                System.out.println(alias);
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance(CryptoUtils.KEY_GEN_ALGORITHM);
+            keyGen.initialize(CryptoUtils.KEY_SIZE); // use default SecureRandom
+            for (int i = 0; i < keys.length; i++) {
+                keys[i] = keyGen.generateKeyPair();
             }
-            keys[0] = getPrivateKeyFromKeyStore("user1", "1nsecur3");
-            keys[1] = getPrivateKeyFromKeyStore("user2", "1nsecur3");
-            keys[2] = getPrivateKeyFromKeyStore("user3", "1nsecur3");
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableKeyException e) {
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Error generating keys!");
             e.printStackTrace();
         }
     }
@@ -65,18 +58,47 @@ public class BaseServiceIT {
     }
 
     static PrivateKey getPrivateKeyFromKeyStore(String alias, String password) throws KeyStoreException,
-            NoSuchAlgorithmException, UnrecoverableKeyException {
+            UnrecoverableKeyException, NoSuchAlgorithmException {
         return (PrivateKey) keyStore.getKey(alias, password.toCharArray());
     }
 
     static TransactionData newTransactionData(String source, String dest, int amount) {
-        TransactionData transaction = new TransactionData();
-        transaction.setUid(UUID.randomUUID().toString());
-        transaction.setSource(source);
-        transaction.setDestination(dest);
-        transaction.setAmount(amount);
-        transaction.setSourceSignature(null);
-        transaction.setDestinationSignature(null);
-        return transaction;
+        TransactionData t = new TransactionData();
+        t.setUid(UUID.randomUUID().toString());
+        t.setSource(source);
+        t.setDestination(dest);
+        t.setAmount(amount);
+        t.setSourceSignature(null);
+        t.setDestinationSignature(null);
+        return t;
+    }
+
+    static TransactionData signSource(TransactionData t, PrivateKey key)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        String s = t.getUid() + t.getSource() + t.getDestination() + String.valueOf(t.getAmount());
+        byte[] dataToSign = s.getBytes();
+        byte[] signature = CryptoUtils.sign(key, dataToSign);
+        t.setSourceSignature(signature);
+        return t;
+    }
+
+    static TransactionData signDestination(TransactionData t, PrivateKey key)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        String s = t.getUid() + t.getSource() + t.getDestination() + String.valueOf(t.getAmount());
+        byte[] dataToSign = CryptoUtils.mergeByteArray(s.getBytes(), t.getSourceSignature());
+        byte[] signature = CryptoUtils.sign(key, dataToSign);
+        t.setDestinationSignature(signature);
+        return t;
+    }
+
+
+    static TransactionData newSignedTransactionData(String source, String dest, int amount, PrivateKey key)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        TransactionData t = newTransactionData(source, dest, amount);
+        return signSource(t, key);
+    }
+
+    static TransactionData newTransactionData(TransactionData t) {
+        return newTransactionData(t.getSource(), t.getDestination(), t.getAmount());
     }
 }

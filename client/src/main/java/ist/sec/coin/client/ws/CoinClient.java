@@ -20,13 +20,12 @@ public class CoinClient implements CoinService {
     }
 
     @Override
-    public String register(String certString) throws RegisterException_Exception {
-        return port.register(certString);
+    public String register(byte[] publicKeyBytes) throws RegisterException_Exception {
+        return port.register(publicKeyBytes);
     }
 
     @Override
-    public void sendAmount(TransactionData transactionData)
-            throws SendAmountException_Exception {
+    public void sendAmount(TransactionData transactionData) throws SendAmountException_Exception {
         port.sendAmount(transactionData);
     }
 
@@ -50,9 +49,4 @@ public class CoinClient implements CoinService {
         port.clean();
     }
 
-    // helpers
-    public byte[] transactionDataBytes(TransactionData t) {
-        String s = t.getUid() + t.getSource() + t.getDestination() + String.valueOf(t.getAmount());
-        return s.getBytes();
-    }
 }

@@ -1,6 +1,5 @@
 package ist.sec.coin.client.it;
 
-import ist.sec.coin.server.security.CryptoUtils;
 import ist.sec.coin.server.ws.RegisterException_Exception;
 import ist.sec.coin.server.ws.SendAmountException_Exception;
 import ist.sec.coin.server.ws.TransactionData;
@@ -9,13 +8,10 @@ import org.junit.Test;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.SignatureException;
-import java.security.cert.CertificateException;
 
 public class SendAmountTest extends BaseServiceIT {
     private String[] accounts = new String[3];
-    private PrivateKey[] keys = new PrivateKey[3];
 
     @Before
     public void setup() {
@@ -23,9 +19,11 @@ public class SendAmountTest extends BaseServiceIT {
     }
 
     @Before
-    public void createAccounts() throws CertificateException, RegisterException_Exception {
-        accounts[0] = client.register(loadEncodedCertificateFromFile("user1.cer"));
-        accounts[1] = client.register(loadEncodedCertificateFromFile("user2.cer"));
+    public void createAccounts() throws RegisterException_Exception {
+        int NUM_ACCOUNTS = 3;
+        for (int i = 0; i < NUM_ACCOUNTS && i < keys.length; i++) {
+            accounts[i] = client.register(keys[i].getPublic().getEncoded());
+        }
     }
 
     @Test(expected = SendAmountException_Exception.class)
@@ -54,25 +52,39 @@ public class SendAmountTest extends BaseServiceIT {
     }
 
     @Test(expected = SendAmountException_Exception.class)
-    public void testInvalidAmount() throws SendAmountException_Exception {
-        client.sendAmount(newTransactionData(accounts[0], accounts[1], 9001));
+    public void testSendToSelf() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
+            InvalidKeyException {
+        TransactionData t = newSignedTransactionData(accounts[0], accounts[0], 1, keys[0].getPrivate());
+        client.sendAmount(t);
     }
 
     @Test(expected = SendAmountException_Exception.class)
-    public void testSendToSelf() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
+    public void testWrongAmountSignature() throws SendAmountException_Exception, NoSuchAlgorithmException,
+            SignatureException, InvalidKeyException {
+        TransactionData t = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        t.setAmount(t.getAmount() + 1);
+        client.sendAmount(t);
+    }
+
+    @Test(expected = SendAmountException_Exception.class)
+    public void testInvalidAmount() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionData transactionData = newTransactionData(accounts[0], accounts[0], 1);
-        byte[] sourceSignature = CryptoUtils.sign(keys[0], client.transactionDataBytes(transactionData));
-        transactionData.setSourceSignature(sourceSignature);
-        client.sendAmount(transactionData);
+        TransactionData t = newSignedTransactionData(accounts[1], accounts[2], 9001, keys[1].getPrivate());
+        client.sendAmount(t);
+    }
+
+    @Test(expected = SendAmountException_Exception.class)
+    public void testWrongKeySign() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
+            InvalidKeyException {
+        TransactionData trans = newSignedTransactionData(accounts[0], accounts[1], 1, keys[1].getPrivate());
+
+        client.sendAmount(trans);
     }
 
     @Test
     public void testValidSend() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionData transactionData = newTransactionData(accounts[0], accounts[1], 2);
-        byte[] sourceSignature = CryptoUtils.sign(keys[0], client.transactionDataBytes(transactionData));
-        transactionData.setSourceSignature(sourceSignature);
-        client.sendAmount(transactionData);
+        TransactionData trans = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        client.sendAmount(trans);
     }
 }

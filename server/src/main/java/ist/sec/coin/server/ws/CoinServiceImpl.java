@@ -10,8 +10,8 @@ import ist.sec.coin.server.ws.exception.*;
 import javax.jws.WebService;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,10 +33,10 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public String register(String certString) throws RegisterException {
+    public String register(byte[] publicKeyBytes) throws RegisterException {
         try {
-            Certificate cert = CryptoUtils.getCertificateFromString(certString);
-            AccountAddress address = coin.registerAccount(cert);
+            PublicKey key = CryptoUtils.getPublicKeyFromString(publicKeyBytes);
+            AccountAddress address = coin.registerAccount(key);
             System.out.println("Registered account: " + address.getFingerprint());
             return address.getFingerprint();
         } catch (Exception e) {
@@ -88,7 +88,7 @@ public class CoinServiceImpl implements CoinService {
     @Override
     public ArrayList<TransactionData> audit(String address) throws AuditException {
         try {
-            List<Transaction> accountTransactions = coin.getAccountTransactions(new AccountAddress(address));
+            List<Transaction> accountTransactions = coin.getAccountDoneTransactions(new AccountAddress(address));
             return (ArrayList<TransactionData>) newListTransactionData(accountTransactions);
         } catch (CoinException e) {
             throw new AuditException(e.getMessage());

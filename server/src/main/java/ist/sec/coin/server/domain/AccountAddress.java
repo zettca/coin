@@ -3,7 +3,7 @@ package ist.sec.coin.server.domain;
 import ist.sec.coin.server.security.CryptoUtils;
 
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
+import java.security.PublicKey;
 
 public class AccountAddress {
     private final String fingerprint;
@@ -15,11 +15,11 @@ public class AccountAddress {
         this.fingerprint = fingerprint;
     }
 
-    public AccountAddress(Certificate cert) throws NoSuchAlgorithmException {
-        if (cert == null) {
+    public AccountAddress(PublicKey key) throws NoSuchAlgorithmException {
+        if (key == null) {
             throw new IllegalArgumentException("invalid argument");
         }
-        this.fingerprint = CryptoUtils.getPublicKeyFingerprint(cert.getPublicKey());
+        this.fingerprint = CryptoUtils.getPublicKeyFingerprint(key);
     }
 
     public String getFingerprint() {
