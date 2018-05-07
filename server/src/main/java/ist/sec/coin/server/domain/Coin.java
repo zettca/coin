@@ -102,7 +102,7 @@ public class Coin {
 
         List<Transaction> transactions = new ArrayList<>();
         for (Transaction transaction : this.pendingTransactions.values()) {
-            if (transaction.getSource().equals(address)) {
+            if (transaction.getSource().equals(address) || transaction.getDestination().equals(address)) {
                 transactions.add(transaction);
             }
         }
