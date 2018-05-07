@@ -2,7 +2,7 @@ package ist.sec.coin.client.it;
 
 import ist.sec.coin.client.ws.CoinClient;
 import ist.sec.coin.server.security.CryptoUtils;
-import ist.sec.coin.server.ws.TransactionData;
+import ist.sec.coin.server.ws.TransactionView;
 import org.junit.BeforeClass;
 
 import javax.xml.bind.DatatypeConverter;
@@ -62,8 +62,8 @@ public class BaseServiceIT {
         return (PrivateKey) keyStore.getKey(alias, password.toCharArray());
     }
 
-    static TransactionData newTransactionData(String source, String dest, int amount) {
-        TransactionData t = new TransactionData();
+    static TransactionView newTransactionData(String source, String dest, int amount) {
+        TransactionView t = new TransactionView();
         t.setUid(UUID.randomUUID().toString());
         t.setSource(source);
         t.setDestination(dest);
@@ -73,7 +73,7 @@ public class BaseServiceIT {
         return t;
     }
 
-    static TransactionData signSource(TransactionData t, PrivateKey key)
+    static TransactionView signSource(TransactionView t, PrivateKey key)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         String s = t.getUid() + t.getSource() + t.getDestination() + String.valueOf(t.getAmount());
         byte[] dataToSign = s.getBytes();
@@ -82,7 +82,7 @@ public class BaseServiceIT {
         return t;
     }
 
-    static TransactionData signDestination(TransactionData t, PrivateKey key)
+    static TransactionView signDestination(TransactionView t, PrivateKey key)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         String s = t.getUid() + t.getSource() + t.getDestination() + String.valueOf(t.getAmount());
         byte[] dataToSign = CryptoUtils.mergeByteArray(s.getBytes(), t.getSourceSignature());
@@ -92,13 +92,13 @@ public class BaseServiceIT {
     }
 
 
-    static TransactionData newSignedTransactionData(String source, String dest, int amount, PrivateKey key)
+    static TransactionView newSignedTransactionData(String source, String dest, int amount, PrivateKey key)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        TransactionData t = newTransactionData(source, dest, amount);
+        TransactionView t = newTransactionData(source, dest, amount);
         return signSource(t, key);
     }
 
-    static TransactionData newTransactionData(TransactionData t) {
+    static TransactionView newTransactionData(TransactionView t) {
         return newTransactionData(t.getSource(), t.getDestination(), t.getAmount());
     }
 }

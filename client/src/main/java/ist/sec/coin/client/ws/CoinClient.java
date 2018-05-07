@@ -25,18 +25,18 @@ public class CoinClient implements CoinService {
     }
 
     @Override
-    public void sendAmount(TransactionData transactionData) throws SendAmountException_Exception {
-        port.sendAmount(transactionData);
+    public void sendAmount(TransactionView transactionView) throws SendAmountException_Exception {
+        port.sendAmount(transactionView);
     }
 
     @Override
-    public AccountStatusData checkAccount(String address) throws CheckAccountException_Exception {
+    public AccountStatusView checkAccount(String address) throws CheckAccountException_Exception {
         return port.checkAccount(address);
     }
 
     @Override
-    public void receiveAmount(TransactionData transactionData) throws ReceiveAmountException_Exception {
-        port.receiveAmount(transactionData);
+    public void receiveAmount(TransactionView transactionView) throws ReceiveAmountException_Exception {
+        port.receiveAmount(transactionView);
     }
 
     @Override

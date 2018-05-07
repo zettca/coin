@@ -2,7 +2,7 @@ package ist.sec.coin.client.it;
 
 import ist.sec.coin.server.ws.RegisterException_Exception;
 import ist.sec.coin.server.ws.SendAmountException_Exception;
-import ist.sec.coin.server.ws.TransactionData;
+import ist.sec.coin.server.ws.TransactionView;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,14 +54,14 @@ public class SendAmountTest extends BaseServiceIT {
     @Test(expected = SendAmountException_Exception.class)
     public void testSendToSelf() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionData t = newSignedTransactionData(accounts[0], accounts[0], 1, keys[0].getPrivate());
+        TransactionView t = newSignedTransactionData(accounts[0], accounts[0], 1, keys[0].getPrivate());
         client.sendAmount(t);
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testWrongAmountSignature() throws SendAmountException_Exception, NoSuchAlgorithmException,
             SignatureException, InvalidKeyException {
-        TransactionData t = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        TransactionView t = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
         t.setAmount(t.getAmount() + 1);
         client.sendAmount(t);
     }
@@ -69,14 +69,14 @@ public class SendAmountTest extends BaseServiceIT {
     @Test(expected = SendAmountException_Exception.class)
     public void testInvalidAmount() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionData t = newSignedTransactionData(accounts[1], accounts[2], 9001, keys[1].getPrivate());
+        TransactionView t = newSignedTransactionData(accounts[1], accounts[2], 9001, keys[1].getPrivate());
         client.sendAmount(t);
     }
 
     @Test(expected = SendAmountException_Exception.class)
     public void testWrongKeySign() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionData trans = newSignedTransactionData(accounts[0], accounts[1], 1, keys[1].getPrivate());
+        TransactionView trans = newSignedTransactionData(accounts[0], accounts[1], 1, keys[1].getPrivate());
 
         client.sendAmount(trans);
     }
@@ -84,7 +84,7 @@ public class SendAmountTest extends BaseServiceIT {
     @Test
     public void testValidSend() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
             InvalidKeyException {
-        TransactionData trans = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        TransactionView trans = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
         client.sendAmount(trans);
     }
 }

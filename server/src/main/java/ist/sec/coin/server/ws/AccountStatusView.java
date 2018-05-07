@@ -4,12 +4,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
-@XmlType(name = "AccountStatusData")
-public class AccountStatusData {
+@XmlType(name = "AccountStatusView")
+public class AccountStatusView {
     private int balance;
-    private List<TransactionData> pendingTransactions;
+    private List<TransactionView> pendingTransactions;
 
-    public AccountStatusData() {
+    public AccountStatusView() {
     }
 
     @XmlElement(name = "balance")
@@ -22,11 +22,11 @@ public class AccountStatusData {
     }
 
     @XmlElement(name = "transaction")
-    public List<TransactionData> getPendingTransactions() {
+    public List<TransactionView> getPendingTransactions() {
         return pendingTransactions;
     }
 
-    public void setPendingTransactions(List<TransactionData> pendingTransactions) {
+    public void setPendingTransactions(List<TransactionView> pendingTransactions) {
         this.pendingTransactions = pendingTransactions;
     }
 }

@@ -24,21 +24,21 @@ public interface CoinService {
 
     @WebMethod
     void sendAmount(
-            @WebParam(name = "transaction") TransactionData transaction)
+            @WebParam(name = "transaction") TransactionView transaction)
             throws SendAmountException;
 
     @WebMethod
-    AccountStatusData checkAccount(
+    AccountStatusView checkAccount(
             @WebParam(name = "fingerprint") String fingerprint)
             throws CheckAccountException;
 
     @WebMethod
     void receiveAmount(
-            @WebParam(name = "transaction") TransactionData transaction)
+            @WebParam(name = "transaction") TransactionView transaction)
             throws ReceiveAmountException;
 
     @WebMethod
-    ArrayList<TransactionData> audit(
+    ArrayList<TransactionView> audit(
             @WebParam(name = "address") String address)
             throws AuditException;
 

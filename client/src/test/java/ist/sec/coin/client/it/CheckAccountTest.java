@@ -43,25 +43,25 @@ public class CheckAccountTest extends BaseServiceIT {
 
     @Test
     public void testAccountHasBalance() throws CheckAccountException_Exception {
-        AccountStatusData accountData = client.checkAccount(accounts[0]);
+        AccountStatusView accountData = client.checkAccount(accounts[0]);
         Assert.assertTrue(accountData.getBalance() > 0);
     }
 
     @Test
     public void testAccountNoTransactions() throws CheckAccountException_Exception {
-        AccountStatusData accountData = client.checkAccount(accounts[0]);
-        List<TransactionData> transactions = accountData.getTransaction();
+        AccountStatusView accountData = client.checkAccount(accounts[0]);
+        List<TransactionView> transactions = accountData.getTransaction();
         Assert.assertTrue(transactions.isEmpty());
     }
 
     @Test
     public void testAccountReturnsTransactions() throws CheckAccountException_Exception, NoSuchAlgorithmException,
             SignatureException, InvalidKeyException, SendAmountException_Exception {
-        TransactionData t = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        TransactionView t = newSignedTransactionData(accounts[0], accounts[1], 2, keys[0].getPrivate());
         client.sendAmount(t);
 
-        AccountStatusData accountData = client.checkAccount(accounts[0]);
-        List<TransactionData> transactions = accountData.getTransaction();
+        AccountStatusView accountData = client.checkAccount(accounts[0]);
+        List<TransactionView> transactions = accountData.getTransaction();
 
         Assert.assertEquals(1, transactions.size());
     }
@@ -69,11 +69,11 @@ public class CheckAccountTest extends BaseServiceIT {
     @Test
     public void testAmountDecreases() throws CheckAccountException_Exception, SendAmountException_Exception,
             NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        AccountStatusData accountStatus = client.checkAccount(accounts[0]);
+        AccountStatusView accountStatus = client.checkAccount(accounts[0]);
         int balanceBefore = accountStatus.getBalance();
         int amount = 2;
 
-        TransactionData trans = newSignedTransactionData(accounts[0], accounts[1], amount, keys[0].getPrivate());
+        TransactionView trans = newSignedTransactionData(accounts[0], accounts[1], amount, keys[0].getPrivate());
         client.sendAmount(trans);
 
         accountStatus = client.checkAccount(accounts[0]);

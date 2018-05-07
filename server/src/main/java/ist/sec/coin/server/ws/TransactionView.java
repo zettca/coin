@@ -3,13 +3,13 @@ package ist.sec.coin.server.ws;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "TransactionData")
-public class TransactionData {
+@XmlType(name = "TransactionView")
+public class TransactionView {
     private String uid, source, destination;
     private int amount;
     private byte[] sourceSignature, destinationSignature;
 
-    public TransactionData() {
+    public TransactionView() {
     }
 
     @XmlElement(name = "uid")

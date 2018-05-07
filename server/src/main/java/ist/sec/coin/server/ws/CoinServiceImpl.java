@@ -45,10 +45,10 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public void sendAmount(TransactionData transactionData)
+    public void sendAmount(TransactionView transactionView)
             throws SendAmountException {
         try {
-            Transaction transaction = newTransaction(transactionData);
+            Transaction transaction = newTransaction(transactionView);
             coin.startTransaction(transaction);
         } catch (CoinException e) {
             throw new SendAmountException(e.getMessage());
@@ -62,7 +62,7 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public AccountStatusData checkAccount(String address) throws CheckAccountException {
+    public AccountStatusView checkAccount(String address) throws CheckAccountException {
         try {
             AccountAddress accountAddress = new AccountAddress(address);
             int balance = coin.getAccountBalance(accountAddress);
@@ -74,9 +74,9 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public void receiveAmount(TransactionData transactionData) throws ReceiveAmountException {
+    public void receiveAmount(TransactionView transactionView) throws ReceiveAmountException {
         try {
-            Transaction transaction = newTransaction(transactionData);
+            Transaction transaction = newTransaction(transactionView);
             coin.commitTransaction(transaction);
         } catch (CoinException e) {
             throw new ReceiveAmountException(e.getMessage());
@@ -86,10 +86,10 @@ public class CoinServiceImpl implements CoinService {
     }
 
     @Override
-    public ArrayList<TransactionData> audit(String address) throws AuditException {
+    public ArrayList<TransactionView> audit(String address) throws AuditException {
         try {
             List<Transaction> accountTransactions = coin.getAccountDoneTransactions(new AccountAddress(address));
-            return (ArrayList<TransactionData>) newListTransactionData(accountTransactions);
+            return (ArrayList<TransactionView>) newListTransactionData(accountTransactions);
         } catch (CoinException e) {
             throw new AuditException(e.getMessage());
         }
@@ -103,19 +103,19 @@ public class CoinServiceImpl implements CoinService {
 
     // ===== Data Constructors
 
-    private Transaction newTransaction(TransactionData transactionData) {
+    private Transaction newTransaction(TransactionView transactionView) {
         Transaction trans = new Transaction(
-                transactionData.getUid(),
-                new AccountAddress(transactionData.getSource()),
-                new AccountAddress(transactionData.getDestination()),
-                transactionData.getAmount());
-        trans.setSourceSignature(transactionData.getSourceSignature());
-        trans.setDestinationSignature(transactionData.getDestinationSignature());
+                transactionView.getUid(),
+                new AccountAddress(transactionView.getSource()),
+                new AccountAddress(transactionView.getDestination()),
+                transactionView.getAmount());
+        trans.setSourceSignature(transactionView.getSourceSignature());
+        trans.setDestinationSignature(transactionView.getDestinationSignature());
         return trans;
     }
 
-    private TransactionData newTransactionData(Transaction transaction) {
-        TransactionData trans = new TransactionData();
+    private TransactionView newTransactionData(Transaction transaction) {
+        TransactionView trans = new TransactionView();
         trans.setUid(transaction.getId());
         trans.setSource(transaction.getSource().getFingerprint());
         trans.setDestination(transaction.getDestination().getFingerprint());
@@ -125,24 +125,24 @@ public class CoinServiceImpl implements CoinService {
         return trans;
     }
 
-    private AccountStatusData newAccountStatusData(int balance, List<Transaction> pendingTransactions) {
-        AccountStatusData accountStatusData = new AccountStatusData();
-        List<TransactionData> transactions = new ArrayList<>();
+    private AccountStatusView newAccountStatusData(int balance, List<Transaction> pendingTransactions) {
+        AccountStatusView accountStatusView = new AccountStatusView();
+        List<TransactionView> transactions = new ArrayList<>();
 
         for (Transaction transaction : pendingTransactions) {
             transactions.add(newTransactionData(transaction));
         }
 
-        accountStatusData.setBalance(balance);
-        accountStatusData.setPendingTransactions(transactions);
-        return accountStatusData;
+        accountStatusView.setBalance(balance);
+        accountStatusView.setPendingTransactions(transactions);
+        return accountStatusView;
     }
 
-    private List<TransactionData> newListTransactionData(List<Transaction> transactions) {
-        List<TransactionData> transactionDataList = new ArrayList<>();
+    private List<TransactionView> newListTransactionData(List<Transaction> transactions) {
+        List<TransactionView> transactionViewList = new ArrayList<>();
         for (Transaction transaction : transactions) {
-            transactionDataList.add(newTransactionData(transaction));
+            transactionViewList.add(newTransactionData(transaction));
         }
-        return transactionDataList;
+        return transactionViewList;
     }
 }
