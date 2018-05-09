@@ -6,6 +6,7 @@ import ist.sec.coin.server.domain.Transaction;
 import ist.sec.coin.server.domain.exception.CoinException;
 import ist.sec.coin.server.security.CryptoUtils;
 import ist.sec.coin.server.ws.exception.*;
+import ist.sec.coin.server.ws.view.*;
 
 import javax.jws.WebService;
 import java.security.InvalidKeyException;

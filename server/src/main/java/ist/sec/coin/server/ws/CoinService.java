@@ -1,6 +1,7 @@
 package ist.sec.coin.server.ws;
 
 import ist.sec.coin.server.ws.exception.*;
+import ist.sec.coin.server.ws.view.*;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
