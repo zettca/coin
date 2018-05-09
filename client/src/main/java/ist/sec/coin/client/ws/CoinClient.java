@@ -7,12 +7,12 @@ import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINamingException;
 import javax.xml.ws.BindingProvider;
 import java.util.Map;
 
-public class CoinClient implements CoinService {
-    private CoinService port;
+public class CoinClient implements CoinServicePortType {
+    private CoinServicePortType port;
 
     public CoinClient() {
-        CoinServiceImplService service = new CoinServiceImplService();
-        port = service.getCoinServiceImplPort();
+        CoinService service = new CoinService();
+        port = service.getCoinServicePort();
     }
 
     public CoinClient(String uddiURL, String wsName) {
@@ -67,4 +67,7 @@ public class CoinClient implements CoinService {
         port.clean();
     }
 
+    @Override
+    public void noticeMeSenpai(String wsURL) {
+    }
 }

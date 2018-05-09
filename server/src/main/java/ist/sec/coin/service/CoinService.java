@@ -1,14 +1,14 @@
-package ist.sec.coin.server.ws;
+package ist.sec.coin.service;
 
-import ist.sec.coin.server.ws.exception.*;
-import ist.sec.coin.server.ws.view.*;
+import ist.sec.coin.service.view.*;
+import ist.sec.coin.service.exception.*;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 
-@WebService
+@WebService(name = "CoinServicePortType")
 @SOAPBinding(style = SOAPBinding.Style.RPC, use = SOAPBinding.Use.ENCODED)
 public interface CoinService {
 

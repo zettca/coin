@@ -5,24 +5,25 @@ import ist.sec.coin.server.domain.Coin;
 import ist.sec.coin.server.domain.Transaction;
 import ist.sec.coin.server.domain.exception.CoinException;
 import ist.sec.coin.server.security.CryptoUtils;
-import ist.sec.coin.server.ws.exception.*;
-import ist.sec.coin.server.ws.view.AccountStatusView;
-import ist.sec.coin.server.ws.view.AuditView;
-import ist.sec.coin.server.ws.view.TransactionView;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINamingException;
 
 import javax.jws.WebService;
-import javax.xml.ws.BindingProvider;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.*;
 
-@WebService(endpointInterface = "ist.sec.coin.server.ws.CoinService")
-public class CoinServiceImpl implements CoinService {
-    private Map<String, CoinService> peerServices;
+@WebService(
+        endpointInterface = "ist.sec.coin.server.ws.CoinServicePortType",
+        wsdlLocation = "coin.wsdl",
+        name = "Coin",
+        serviceName = "CoinService",
+        portName = "CoinServicePort",
+        targetNamespace = "http://ws.server.coin.sec.ist/")
+public class CoinServiceImpl implements CoinServicePortType {
+    private Map<String, CoinServicePortType> peerServices;
     private Coin coin;
 
     public CoinServiceImpl() {
@@ -49,12 +50,12 @@ public class CoinServiceImpl implements CoinService {
             if (!peerUrl.equals(CoinServiceApp.endpointURL)) {
                 /*CoinServiceImplService service = new CoinServiceImplService();
                 port = service.getCoinServiceImplPort(); */
-                CoinService peerService = new CoinServiceImpl(false);
+                /*CoinServicePortType peerService = new CoinServiceImpl(false);
                 BindingProvider bindingProvider = (BindingProvider) peerService;
                 Map<String, Object> requestContext = bindingProvider.getRequestContext();
                 requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, peerUrl);
                 peerServices.put(peerUrl, peerService);
-                peerService.noticeMeSenpai(CoinServiceApp.endpointURL);
+                peerService.noticeMeSenpai(CoinServiceApp.endpointURL);*/
             }
         }
     }
@@ -69,71 +70,70 @@ public class CoinServiceImpl implements CoinService {
     // ===== CoinService Methods
 
     @Override
-    public String echo(String message) throws EchoException {
+    public String echo(String message) throws EchoException_Exception {
         if (message.trim().isEmpty()) {
-            throw new EchoException("Echo message cannot be empty");
+            throw newEchoException("Echo message cannot be empty");
         }
         return "<" + message + ">";
     }
 
     @Override
-    public String register(byte[] publicKeyBytes) throws RegisterException {
+    public String register(byte[] publicKeyBytes) throws RegisterException_Exception {
         try {
             PublicKey key = CryptoUtils.getPublicKeyFromString(publicKeyBytes);
             AccountAddress address = coin.registerAccount(key);
             System.out.println("Registered account: " + address.getFingerprint());
             return address.getFingerprint();
         } catch (Exception e) {
-            throw new RegisterException(e.getMessage());
+            throw newRegisterException(e.getMessage());
         }
     }
 
     @Override
-    public void sendAmount(TransactionView transactionView)
-            throws SendAmountException {
+    public void sendAmount(TransactionView transactionView) throws SendAmountException_Exception {
         try {
             Transaction transaction = newTransaction(transactionView);
             coin.startTransaction(transaction);
         } catch (CoinException e) {
-            throw new SendAmountException(e.getMessage());
+            throw newSendAmountException(e.getMessage());
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
             e.printStackTrace();
-            throw new SendAmountException(e.getMessage());
+            throw newSendAmountException(e.getMessage());
         }
     }
 
     @Override
-    public AccountStatusView checkAccount(String address) throws CheckAccountException {
+    public AccountStatusView checkAccount(String address) throws CheckAccountException_Exception {
         try {
             AccountAddress accountAddress = new AccountAddress(address);
             int balance = coin.getAccountBalance(accountAddress);
             List<Transaction> pendingTransactions = coin.getAccountPendingTransactions(accountAddress);
             return newAccountStatusView(balance, pendingTransactions);
         } catch (CoinException e) {
-            throw new CheckAccountException(e.getMessage());
+            throw newCheckAccountException(e.getMessage());
         }
     }
 
     @Override
-    public void receiveAmount(TransactionView transactionView) throws ReceiveAmountException {
+    public void receiveAmount(TransactionView transactionView) throws ReceiveAmountException_Exception {
         try {
             Transaction transaction = newTransaction(transactionView);
             coin.commitTransaction(transaction);
         } catch (CoinException e) {
-            throw new ReceiveAmountException(e.getMessage());
+            throw newReceiveAmountException(e.getMessage());
         } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
             e.printStackTrace();
-            throw new ReceiveAmountException(e.getMessage());
+            throw newReceiveAmountException(e.getMessage());
         }
     }
 
     @Override
-    public AuditView audit(String address) throws AuditException {
+    public AuditView audit(String address) throws AuditException_Exception {
         try {
             List<Transaction> accountTransactions = coin.getAccountDoneTransactions(new AccountAddress(address));
             return newAuditView(accountTransactions);
         } catch (CoinException e) {
-            throw new AuditException(e.getMessage());
+            throw newAuditException(e.getMessage());
         }
     }
 
@@ -148,7 +148,7 @@ public class CoinServiceImpl implements CoinService {
         System.out.println(String.format("Service at %s joined the network...", wsURL));
         //TODO: implement some refresh thing
         if (!peerServices.containsKey(wsURL)) {
-            peerServices.put(wsURL, new CoinServiceImpl());
+            peerServices.put(wsURL, /*new CoinServiceImpl()*/null);
         }
     }
 
@@ -178,14 +178,16 @@ public class CoinServiceImpl implements CoinService {
 
     private AccountStatusView newAccountStatusView(int balance, List<Transaction> pendingTransactions) {
         AccountStatusView accountStatusView = new AccountStatusView();
-        List<TransactionView> transactions = new ArrayList<>();
+        List<TransactionView> transactionViews = new ArrayList<>();
 
         for (Transaction transaction : pendingTransactions) {
-            transactions.add(newTransactionView(transaction));
+            transactionViews.add(newTransactionView(transaction));
         }
 
         accountStatusView.setBalance(balance);
-        accountStatusView.setPendingTransactions(transactions);
+        List<TransactionView> transactions1 = accountStatusView.getTransactions();
+        transactions1.clear();
+        transactions1.addAll(transactionViews);
         return accountStatusView;
     }
 
@@ -197,7 +199,9 @@ public class CoinServiceImpl implements CoinService {
             transactionViews.add(newTransactionView(transaction));
         }
 
-        auditView.setTransactions(transactionViews);
+        List<TransactionView> transactions1 = auditView.getTransactions();
+        transactions1.clear();
+        transactions1.addAll(transactionViews);
         return auditView;
     }
 
@@ -208,4 +212,44 @@ public class CoinServiceImpl implements CoinService {
         }
         return transactionViewList;
     }
+
+    // ===== Exception Constructors
+
+    private EchoException_Exception newEchoException(String message) {
+        EchoException e = new EchoException();
+        e.setMessage(message);
+        return new EchoException_Exception(message, e);
+    }
+
+    private RegisterException_Exception newRegisterException(String message) {
+        RegisterException e = new RegisterException();
+        e.setMessage(message);
+        return new RegisterException_Exception(message, e);
+    }
+
+    private SendAmountException_Exception newSendAmountException(String message) {
+        SendAmountException e = new SendAmountException();
+        e.setMessage(message);
+        return new SendAmountException_Exception(message, e);
+    }
+
+    private CheckAccountException_Exception newCheckAccountException(String message) {
+        CheckAccountException e = new CheckAccountException();
+        e.setMessage(message);
+        return new CheckAccountException_Exception(message, e);
+    }
+
+    private ReceiveAmountException_Exception newReceiveAmountException(String message) {
+        ReceiveAmountException e = new ReceiveAmountException();
+        e.setMessage(message);
+        return new ReceiveAmountException_Exception(message, e);
+    }
+
+    private AuditException_Exception newAuditException(String message) {
+        AuditException e = new AuditException();
+        e.setMessage(message);
+        return new AuditException_Exception(message, e);
+    }
+
+
 }

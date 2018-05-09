@@ -16,7 +16,10 @@
 
         <ws.name>coin</ws.name>
 
+        <wsdl.dir>${basedir}/..</wsdl.dir>
+        <wsdl.name>coin.wsdl</wsdl.name>
         <wsdl.url>http://localhost:8090/ws/coin</wsdl.url>
+
         <uddi.url>http://localhost:9090/</uddi.url>
     </properties>
 
@@ -67,9 +70,13 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <wsdlUrls>
+                    <wsdlDirectory>${wsdl.dir}</wsdlDirectory>
+                    <wsdlFiles>
+                        <wsdlFile>${wsdl.name}</wsdlFile>
+                    </wsdlFiles>
+                    <!--wsdlUrls>
                         <wsdlUrl>${wsdl.url}?wsdl</wsdlUrl>
-                    </wsdlUrls>
+                    </wsdlUrls-->
                 </configuration>
                 <dependencies>
                     <dependency>

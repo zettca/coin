@@ -1,4 +1,4 @@
-package ist.sec.coin.server.ws.exception;
+package ist.sec.coin.service.exception;
 
 import javax.xml.soap.SOAPException;
 

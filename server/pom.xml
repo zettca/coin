@@ -20,7 +20,10 @@
         <ws.port>809${ws.i}</ws.port>
         <ws.url>http://${ws.host}:${ws.port}/ws/${ws.name}</ws.url>
 
+        <wsdl.dir>${basedir}/../</wsdl.dir>
+        <wsdl.name>coin.wsdl</wsdl.name>
         <wsdl.url>http://localhost:8090/ws/coin</wsdl.url>
+
         <uddi.url>http://localhost:9090/</uddi.url>
     </properties>
 
@@ -65,9 +68,13 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <wsdlUrls>
-                        <!--wsdlUrl>${wsdl.url}?wsdl</wsdlUrl-->
-                    </wsdlUrls>
+                    <wsdlDirectory>${wsdl.dir}</wsdlDirectory>
+                    <wsdlFiles>
+                        <wsdlFile>${wsdl.name}</wsdlFile>
+                    </wsdlFiles>
+                    <!--wsdlUrls>
+                        <wsdlUrl>${wsdl.url}?wsdl</wsdlUrl>
+                    </wsdlUrls-->
                 </configuration>
                 <dependencies>
                     <dependency>

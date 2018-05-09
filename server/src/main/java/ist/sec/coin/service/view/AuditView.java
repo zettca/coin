@@ -1,4 +1,4 @@
-package ist.sec.coin.server.ws.view;
+package ist.sec.coin.service.view;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;

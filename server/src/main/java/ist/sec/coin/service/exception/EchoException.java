@@ -1,4 +1,4 @@
-package ist.sec.coin.server.ws.exception;
+package ist.sec.coin.service.exception;
 
 public class EchoException extends Exception {
     public EchoException() {
