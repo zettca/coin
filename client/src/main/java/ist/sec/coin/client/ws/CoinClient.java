@@ -1,6 +1,8 @@
 package ist.sec.coin.client.ws;
 
 import ist.sec.coin.server.ws.*;
+import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINamingException;
 
 public class CoinClient implements CoinService {
     private CoinService port;
@@ -10,8 +12,14 @@ public class CoinClient implements CoinService {
         port = service.getCoinServiceImplPort();
     }
 
-    public CoinClient(String endpointURL) {
+    public CoinClient(String uddiURL, String wsName) {
         this();
+        try {
+            UDDINaming uddiNaming = new UDDINaming(uddiURL);
+        } catch (UDDINamingException e) {
+            System.out.println("Error on UDDI...");
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override

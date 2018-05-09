@@ -1,21 +1,20 @@
 package ist.sec.coin.client.ws;
 
-import ist.sec.coin.server.ws.EchoException_Exception;
-
 public class CoinClientApp {
 
-    public static void main(String[] args) {
-
-        CoinClient client = new CoinClient();
-
-        System.out.println("Client launched!");
-
-        String echoResponse = "";
-        try {
-            echoResponse = client.echo("BlaBlaAlah!");
-        } catch (EchoException_Exception e) {
-            System.out.println("Echo failed! :O");
+    public static void main(String[] args) throws Exception {
+        if (args.length < 2) {
+            System.err.println("ARGS USAGE: uddiUrl wsName");
         }
+
+        String uddiURL = args[0];
+        String wsName = args[1];
+
+        System.out.println(String.format("ARGS: %s %s", uddiURL, wsName));
+
+        CoinClient client = new CoinClient(uddiURL, wsName);
+
+        String echoResponse = client.echo("BlaBlaAlah!");
         System.out.println("Server responded with: " + echoResponse);
     }
 }

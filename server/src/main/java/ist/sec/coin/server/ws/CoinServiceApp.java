@@ -8,14 +8,16 @@ import java.security.Security;
 
 public class CoinServiceApp {
 
-    public static void main(String[] args) throws UDDINamingException {
-        if (args.length < 1) {
-            System.err.println("Missing endpoint URL");
+    public static void main(String[] args) {
+        if (args.length < 3) {
+            System.err.println("ARGS USAGE: uddiUrl endpointURL endpointName");
         }
 
         String uddiURL = args[0];
         String endpointURL = args[1];
         String endpointName = args[2];
+
+        System.out.println(String.format("ARGS: %s %s %s", uddiURL, endpointURL, endpointName));
 
         System.out.println("Signature algorithms: " + Security.getAlgorithms("Signature"));
         System.out.println("MessageDigest algorithms: " + Security.getAlgorithms("MessageDigest"));
@@ -24,10 +26,16 @@ public class CoinServiceApp {
         Endpoint.publish(endpointURL, new CoinServiceImpl());
         System.out.println("Server Endpoint running at: " + endpointURL);
 
-        System.out.println("Publishing server endpoint...");
-        UDDINaming uddiNaming = new UDDINaming(uddiURL);
-        uddiNaming.rebind(endpointName, endpointURL);
-        System.out.println("Server Endpoint published to: " + uddiURL);
+        try {
+            System.out.println("Publishing server endpoint...");
+            UDDINaming uddiNaming = new UDDINaming(uddiURL);
+            uddiNaming.rebind(endpointName, endpointURL);
+        } catch (UDDINamingException e) {
+            e.printStackTrace();
+            System.out.println("Failed publishing to UDDI...");
+            return;
+        }
+        System.out.println(String.format("Server Endpoint published to: %s as %s", uddiURL, endpointName));
     }
 
 }
