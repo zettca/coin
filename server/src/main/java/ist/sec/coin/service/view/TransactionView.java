@@ -1,18 +1,29 @@
 package ist.sec.coin.service.view;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TransactionView")
 public class TransactionView {
-    private String uid, source, destination;
+    @XmlElement(name = "uid")
+    private String uid;
+    @XmlElement(name = "source")
+    private String source;
+    @XmlElement(name = "destination")
+    private String destination;
+    @XmlElement(name = "amount")
     private int amount;
-    private byte[] sourceSignature, destinationSignature;
+    @XmlElement(name = "sourceSignature")
+    private byte[] sourceSignature;
+    @XmlElement(name = "destinationSignature")
+    private byte[] destinationSignature;
 
     public TransactionView() {
     }
 
-    @XmlElement(name = "uid")
     public String getUid() {
         return uid;
     }
@@ -21,7 +32,6 @@ public class TransactionView {
         this.uid = uid;
     }
 
-    @XmlElement(name = "source")
     public String getSource() {
         return source;
     }
@@ -30,7 +40,6 @@ public class TransactionView {
         this.source = source;
     }
 
-    @XmlElement(name = "destination")
     public String getDestination() {
         return destination;
     }
@@ -39,7 +48,6 @@ public class TransactionView {
         this.destination = destination;
     }
 
-    @XmlElement(name = "amount")
     public int getAmount() {
         return amount;
     }
@@ -48,7 +56,6 @@ public class TransactionView {
         this.amount = amount;
     }
 
-    @XmlElement(name = "sourceSignature")
     public byte[] getSourceSignature() {
         return sourceSignature;
     }
@@ -57,7 +64,6 @@ public class TransactionView {
         this.sourceSignature = sourceSignature;
     }
 
-    @XmlElement(name = "destinationSignature")
     public byte[] getDestinationSignature() {
         return destinationSignature;
     }

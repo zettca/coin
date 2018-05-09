@@ -1,18 +1,22 @@
 package ist.sec.coin.service.view;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AccountStatusView")
 public class AccountStatusView {
+    @XmlElement(name = "balance")
     private int balance;
+    @XmlElement(name = "transactions")
     private List<TransactionView> pendingTransactions;
 
     public AccountStatusView() {
     }
 
-    @XmlElement(name = "balance")
     public int getBalance() {
         return balance;
     }
@@ -21,7 +25,6 @@ public class AccountStatusView {
         this.balance = balance;
     }
 
-    @XmlElement(name = "transactions")
     public List<TransactionView> getPendingTransactions() {
         return pendingTransactions;
     }

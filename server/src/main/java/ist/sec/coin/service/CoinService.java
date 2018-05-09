@@ -8,7 +8,10 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 
-@WebService(name = "CoinServicePortType")
+@WebService(
+        name = "Coin",
+        serviceName = "CoinService",
+        portName = "CoinServicePort")
 @SOAPBinding(style = SOAPBinding.Style.RPC, use = SOAPBinding.Use.ENCODED)
 public interface CoinService {
 
@@ -52,5 +55,6 @@ public interface CoinService {
     // ===== CoinService Sync/Broadcast Methods
 
     @WebMethod
-    void noticeMeSenpai(String wsURL);
+    void noticeMeSenpai(
+            @WebParam(name = "wsURL") String wsURL);
 }
