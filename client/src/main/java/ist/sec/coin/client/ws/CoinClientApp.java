@@ -3,6 +3,8 @@ package ist.sec.coin.client.ws;
 public class CoinClientApp {
 
     public static void main(String[] args) throws Exception {
+        System.setProperty("javax.xml.bind.JAXBContext", "com.sun.xml.internal.bind.v2.ContextFactory");
+
         if (args.length < 2) {
             System.err.println("ARGS USAGE: uddiUrl wsName");
         }

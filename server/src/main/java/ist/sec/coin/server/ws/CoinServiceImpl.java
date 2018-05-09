@@ -6,7 +6,9 @@ import ist.sec.coin.server.domain.Transaction;
 import ist.sec.coin.server.domain.exception.CoinException;
 import ist.sec.coin.server.security.CryptoUtils;
 import ist.sec.coin.server.ws.exception.*;
-import ist.sec.coin.server.ws.view.*;
+import ist.sec.coin.server.ws.view.AccountStatusView;
+import ist.sec.coin.server.ws.view.AuditView;
+import ist.sec.coin.server.ws.view.TransactionView;
 
 import javax.jws.WebService;
 import java.security.InvalidKeyException;
@@ -18,11 +20,22 @@ import java.util.List;
 
 @WebService(endpointInterface = "ist.sec.coin.server.ws.CoinService")
 public class CoinServiceImpl implements CoinService {
+    private List<CoinService> peerServices;
     private Coin coin;
 
     public CoinServiceImpl() {
-        System.setProperty("javax.xml.bind.JAXBContext", "com.sun.xml.internal.bind.v2.ContextFactory");
         coin = Coin.getInstance();
+
+        // TODO: get peers
+        List<String> peerUrls = new ArrayList<>();
+        fillPeers(peerUrls);
+    }
+
+    private void fillPeers(List<String> peerUrls) {
+        peerServices = new ArrayList<>();
+        for (String peerUrl : peerUrls) {
+            peerServices.add(new CoinServiceImpl());
+        }
     }
 
     @Override

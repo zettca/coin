@@ -4,6 +4,9 @@ import ist.sec.coin.server.ws.*;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINamingException;
 
+import javax.xml.ws.BindingProvider;
+import java.util.Map;
+
 public class CoinClient implements CoinService {
     private CoinService port;
 
@@ -16,6 +19,13 @@ public class CoinClient implements CoinService {
         this();
         try {
             UDDINaming uddiNaming = new UDDINaming(uddiURL);
+            String wsURL = uddiNaming.lookup(wsName);
+
+            BindingProvider bindingProvider = (BindingProvider) port;
+            Map<String, Object> requestContext = bindingProvider.getRequestContext();
+            requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, wsURL);
+            System.out.println("Bound requests to: " + wsURL);
+
         } catch (UDDINamingException e) {
             System.out.println("Error on UDDI...");
             System.out.println(e.getMessage());

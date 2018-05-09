@@ -35,12 +35,13 @@ public class Coin {
     public synchronized AccountAddress registerAccount(PublicKey key)
             throws RegisteredAccountException, NoSuchAlgorithmException {
         AccountAddress address = new AccountAddress(key);
+        String fingerprint = address.getFingerprint();
 
-        if (this.accountKeys.containsKey(address.getFingerprint()) || this.accountLedgers.containsKey(address.getFingerprint())) {
+        if (this.accountKeys.containsKey(fingerprint) || this.accountLedgers.containsKey(fingerprint)) {
             throw new RegisteredAccountException("Account is already registered");
         } else {
-            this.accountKeys.put(address.getFingerprint(), key);
-            this.accountLedgers.put(address.getFingerprint(), new Ledger(address, STARTING_BALANCE));
+            this.accountKeys.put(fingerprint, key);
+            this.accountLedgers.put(fingerprint, new Ledger(address, STARTING_BALANCE));
             return address;
         }
     }
@@ -62,28 +63,21 @@ public class Coin {
         } else if (this.getLedger(transaction.getSource()).getBalance() < transaction.getAmount()) {
             throw new InvalidAmountException("Sender does not have enough funds");
         } else {
-            // Transaction is valid!
-            this.pendingTransactions.put(transaction.getId(), transaction);
+            doStartTransaction(transaction);
         }
     }
 
-    public synchronized void commitTransaction(Transaction transaction)
-            throws NonExistentAccountException, NoSuchAlgorithmException, InvalidKeyException, SignatureException,
-            TamperingException {
+    public synchronized void commitTransaction(Transaction transaction) throws NonExistentAccountException,
+            NoSuchAlgorithmException, InvalidKeyException, SignatureException, TamperingException {
         PublicKey senderKey = this.getPublicKey(transaction.getSource());
         PublicKey receiverKey = this.getPublicKey(transaction.getDestination());
-        Ledger sourceLedger = this.getLedger(transaction.getSource());
-        Ledger destinationLedger = this.getLedger(transaction.getDestination());
 
         if (!transaction.validateSource(senderKey)) {
             throw new TamperingException("Sender signature is incorrect");
         } else if (!transaction.validateDestination(receiverKey)) {
             throw new TamperingException("Receiver signature is incorrect");
         } else {
-            // Transaction is valid. Commit it. TODO: commit better
-            this.pendingTransactions.remove(transaction.getId());
-            sourceLedger.addTransaction(transaction);
-            destinationLedger.addTransaction(transaction);
+            doCommitTransaction(transaction);
         }
     }
 
@@ -107,6 +101,23 @@ public class Coin {
             }
         }
         return transactions;
+    }
+
+    /* ========== SHARED WRITE METHODS ========== */
+
+
+    private synchronized void doStartTransaction(Transaction transaction) {
+        this.pendingTransactions.put(transaction.getId(), transaction);
+    }
+
+    private synchronized void doCommitTransaction(Transaction transaction) throws NonExistentAccountException {
+        Ledger sourceLedger = this.getLedger(transaction.getSource());
+        Ledger destinationLedger = this.getLedger(transaction.getDestination());
+
+        sourceLedger.addTransaction(transaction);
+        destinationLedger.addTransaction(transaction);
+
+        this.pendingTransactions.remove(transaction.getId());
     }
 
     /* ========== HELPING METHODS ========== */
