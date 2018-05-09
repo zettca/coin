@@ -46,28 +46,22 @@ public class BaseServiceIT {
         return t;
     }
 
-    static TransactionView signSource(TransactionView t, PrivateKey key)
+    static TransactionView signTransaction(TransactionView t, PrivateKey key)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         String s = t.getUid() + t.getSource() + t.getDestination() + String.valueOf(t.getAmount());
         byte[] dataToSign = s.getBytes();
         byte[] signature = CryptoUtils.sign(key, dataToSign);
-        t.setSourceSignature(signature);
+        if (t.getSourceSignature() == null) { // since signing order is sender > destination
+            t.setSourceSignature(signature);
+        } else {
+            t.setDestinationSignature(signature);
+        }
         return t;
     }
-
-    static TransactionView signDestination(TransactionView t, PrivateKey key)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        String s = t.getUid() + t.getSource() + t.getDestination() + String.valueOf(t.getAmount());
-        byte[] dataToSign = CryptoUtils.mergeByteArray(s.getBytes(), t.getSourceSignature());
-        byte[] signature = CryptoUtils.sign(key, dataToSign);
-        t.setDestinationSignature(signature);
-        return t;
-    }
-
 
     static TransactionView newSignedTransactionView(String source, String dest, int amount, PrivateKey key)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         TransactionView t = newTransactionView(source, dest, amount);
-        return signSource(t, key);
+        return signTransaction(t, key);
     }
 }

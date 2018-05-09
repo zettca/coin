@@ -34,8 +34,8 @@ public class AuditTest extends BaseServiceIT {
         client.sendAmount(t1);
         client.sendAmount(t2);
 
-        t1 = signDestination(t1, keys[1].getPrivate());
-        t2 = signDestination(t2, keys[2].getPrivate());
+        t1 = signTransaction(t1, keys[1].getPrivate());
+        t2 = signTransaction(t2, keys[2].getPrivate());
 
         client.receiveAmount(t1);
         client.receiveAmount(t2);

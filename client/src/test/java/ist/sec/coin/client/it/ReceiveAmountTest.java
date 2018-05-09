@@ -43,7 +43,7 @@ public class ReceiveAmountTest extends BaseServiceIT {
         Assert.assertEquals(balance0, status0.getBalance());
         Assert.assertEquals(balance1, status1.getBalance());
 
-        trans = signDestination(trans, keys[1].getPrivate());
+        trans = signTransaction(trans, keys[1].getPrivate());
         client.receiveAmount(trans);
 
         status0 = client.checkAccount(accounts[0]);

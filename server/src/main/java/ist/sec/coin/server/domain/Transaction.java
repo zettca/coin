@@ -68,10 +68,6 @@ public class Transaction {
         return toString().getBytes();
     }
 
-    private byte[] getSignedData() {
-        return CryptoUtils.mergeByteArray(getData(), this.sourceSignature);
-    }
-
     boolean validateSource(PublicKey sourceKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         return CryptoUtils.verifySignature(sourceKey, getData(), sourceSignature);
@@ -79,7 +75,7 @@ public class Transaction {
 
     boolean validateDestination(PublicKey destinationKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        return CryptoUtils.verifySignature(destinationKey, getSignedData(), destinationSignature);
+        return CryptoUtils.verifySignature(destinationKey, getData(), destinationSignature);
     }
 
 }
