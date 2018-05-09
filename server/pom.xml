@@ -20,6 +20,7 @@
         <ws.port>809${ws.i}</ws.port>
         <ws.url>http://${ws.host}:${ws.port}/ws/${ws.name}</ws.url>
 
+        <wsdl.url>http://localhost:8090/ws/coin</wsdl.url>
         <uddi.url>http://localhost:9090/</uddi.url>
     </properties>
 
@@ -51,6 +52,31 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxws-maven-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>wsimport</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <wsdlUrls>
+                        <!--wsdlUrl>${wsdl.url}?wsdl</wsdlUrl-->
+                    </wsdlUrls>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-tools</artifactId>
+                        <version>2.3.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>

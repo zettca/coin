@@ -9,34 +9,64 @@ import ist.sec.coin.server.ws.exception.*;
 import ist.sec.coin.server.ws.view.AccountStatusView;
 import ist.sec.coin.server.ws.view.AuditView;
 import ist.sec.coin.server.ws.view.TransactionView;
+import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINamingException;
 
 import javax.jws.WebService;
+import javax.xml.ws.BindingProvider;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @WebService(endpointInterface = "ist.sec.coin.server.ws.CoinService")
 public class CoinServiceImpl implements CoinService {
-    private List<CoinService> peerServices;
+    private Map<String, CoinService> peerServices;
     private Coin coin;
 
     public CoinServiceImpl() {
         coin = Coin.getInstance();
 
-        // TODO: get peers
-        List<String> peerUrls = new ArrayList<>();
-        fillPeers(peerUrls);
-    }
-
-    private void fillPeers(List<String> peerUrls) {
-        peerServices = new ArrayList<>();
-        for (String peerUrl : peerUrls) {
-            peerServices.add(new CoinServiceImpl());
+        try {
+            updatePeers();
+        } catch (UDDINamingException e) {
+            System.out.println("ERROR getting peers...");
+            System.out.println(e.getMessage());
         }
     }
+
+    public CoinServiceImpl(boolean update) {
+        coin = Coin.getInstance();
+    }
+
+    // ===== Auxiliary Setup Methods
+
+    private void updatePeers() throws UDDINamingException {
+        Collection<String> peerUrls = findPeers();
+        peerServices = new HashMap<>();
+        for (String peerUrl : peerUrls) {
+            if (!peerUrl.equals(CoinServiceApp.endpointURL)) {
+                /*CoinServiceImplService service = new CoinServiceImplService();
+                port = service.getCoinServiceImplPort(); */
+                CoinService peerService = new CoinServiceImpl(false);
+                BindingProvider bindingProvider = (BindingProvider) peerService;
+                Map<String, Object> requestContext = bindingProvider.getRequestContext();
+                requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, peerUrl);
+                peerServices.put(peerUrl, peerService);
+                peerService.noticeMeSenpai(CoinServiceApp.endpointURL);
+            }
+        }
+    }
+
+    private Collection<String> findPeers() throws UDDINamingException {
+        UDDINaming uddiNaming = new UDDINaming(CoinServiceApp.uddiURL);
+        Collection<String> coinServices = uddiNaming.list(CoinServiceApp.endpointName);
+        System.out.println("Found peer services: " + coinServices);
+        return coinServices;
+    }
+
+    // ===== CoinService Methods
 
     @Override
     public String echo(String message) throws EchoException {
@@ -111,6 +141,15 @@ public class CoinServiceImpl implements CoinService {
     public void clean() {
         System.out.println("Clearing all data...");
         coin.clean();
+    }
+
+    @Override
+    public void noticeMeSenpai(String wsURL) {
+        System.out.println(String.format("Service at %s joined the network...", wsURL));
+        //TODO: implement some refresh thing
+        if (!peerServices.containsKey(wsURL)) {
+            peerServices.put(wsURL, new CoinServiceImpl());
+        }
     }
 
     // ===== Data Constructors

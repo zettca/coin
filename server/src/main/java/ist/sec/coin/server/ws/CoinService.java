@@ -12,6 +12,8 @@ import javax.jws.soap.SOAPBinding;
 @SOAPBinding(style = SOAPBinding.Style.RPC, use = SOAPBinding.Use.ENCODED)
 public interface CoinService {
 
+    // ===== CoinService Main Methods
+
     @WebMethod
     String echo(
             @WebParam(name = "message") String message)
@@ -42,8 +44,13 @@ public interface CoinService {
             @WebParam(name = "address") String address)
             throws AuditException;
 
-    // ===== Used for testing
+    // ===== CoinService Aux/Testing Methods
 
     @WebMethod
     void clean();
+
+    // ===== CoinService Sync/Broadcast Methods
+
+    @WebMethod
+    void noticeMeSenpai(String wsURL);
 }

@@ -7,23 +7,22 @@ import javax.xml.ws.Endpoint;
 import java.security.Security;
 
 public class CoinServiceApp {
-    private static String uddiURL, endpointURL, endpointName;
+    static String uddiURL, endpointURL, endpointName;
     private static Endpoint endpoint;
     private static UDDINaming uddiNaming;
 
     private static void startEndpoint() {
-        System.out.println("Starting server endpoint...");
+        System.out.println("Mounting server endpoint...");
         endpoint = Endpoint.create(new CoinServiceImpl());
         endpoint.publish(endpointURL);
-        System.out.println("Server Endpoint running at: " + endpointURL);
+        System.out.println("Mounted server endpoint to: " + endpointURL);
     }
 
-    private static void publishEndpoint()
-            throws UDDINamingException {
+    private static void publishEndpoint() throws UDDINamingException {
         System.out.println("Publishing server endpoint...");
         uddiNaming = new UDDINaming(uddiURL);
-        uddiNaming.rebind(endpointName, endpointURL);
-        System.out.println(String.format("Server Endpoint published as %s to %s", endpointName, uddiURL));
+        uddiNaming.bind(endpointName, endpointURL);
+        System.out.println(String.format("Published server endpoint as %s to %s", endpointName, uddiURL));
     }
 
     private static void stopEndpoint() throws UDDINamingException {
@@ -49,6 +48,19 @@ public class CoinServiceApp {
         System.out.println("Signature algorithms: " + Security.getAlgorithms("Signature"));
         System.out.println("MessageDigest algorithms: " + Security.getAlgorithms("MessageDigest"));
         System.out.println();
+
+        // Catch Ctrl+C to exit properly
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("\nIntercepted SIGINT");
+            System.out.println("Stopping endpoint and unregistering service properly...");
+            try {
+                stopEndpoint();
+            } catch (UDDINamingException e) {
+                System.out.println(e.getMessage());
+            }
+            System.out.println("Done.");
+        }));
+
 
         startEndpoint();
         publishEndpoint();
