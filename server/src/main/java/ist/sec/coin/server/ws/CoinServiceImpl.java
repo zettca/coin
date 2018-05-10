@@ -216,9 +216,10 @@ public class CoinServiceImpl implements CoinServicePortType {
     }
 
     private boolean doRegisterAux(byte[] publicKeyBytes) {
+        Set<String> peerUrls = peerServices.keySet();
         int successes = 0, failures = 0;
 
-        System.out.println("Starting vote on register() to: " + peerServices.keySet());
+        System.out.println("Starting vote on register() to: " + peerUrls);
 
         for (CoinServicePortType peerPort : peerServices.values()) {
             boolean done = peerPort.doRegister(publicKeyBytes);
@@ -230,13 +231,14 @@ public class CoinServiceImpl implements CoinServicePortType {
             }
         }
 
-        return (successes > failures);
+        return (peerUrls.size() <= 1 || successes > failures);
     }
 
     private boolean doSendAmountAux(TransactionView transactionView) {
+        Set<String> peerUrls = peerServices.keySet();
         int successes = 0, failures = 0;
 
-        System.out.println("Starting vote on sendAmount() to: " + peerServices.keySet());
+        System.out.println("Starting vote on sendAmount() to: " + peerUrls);
 
         for (CoinServicePortType peerPort : peerServices.values()) {
             boolean done = peerPort.doSendAmount(transactionView);
@@ -248,13 +250,14 @@ public class CoinServiceImpl implements CoinServicePortType {
             }
         }
 
-        return (successes > failures);
+        return (peerUrls.size() <= 1 || successes > failures);
     }
 
     private boolean doReceiveAmountAux(TransactionView transactionView) {
+        Set<String> peerUrls = peerServices.keySet();
         int successes = 0, failures = 0;
 
-        System.out.println("Starting vote on receiveAmount() to: " + peerServices.keySet());
+        System.out.println("Starting vote on receiveAmount() to: " + peerUrls);
 
         for (CoinServicePortType peerPort : peerServices.values()) {
             boolean done = peerPort.doReceiveAmount(transactionView);
@@ -266,7 +269,7 @@ public class CoinServiceImpl implements CoinServicePortType {
             }
         }
 
-        return (successes > failures);
+        return (peerUrls.size() <= 1 || successes > failures);
     }
 
     // ===== Data Constructors
