@@ -7,26 +7,27 @@ import javax.xml.ws.Endpoint;
 import java.security.Security;
 
 public class CoinServiceApp {
-    static String uddiURL, endpointURL, endpointName;
+    static String uddiURL, endpointURL, endpointName, unbind;
     private static Endpoint endpoint;
     private static UDDINaming uddiNaming;
 
     private static void startEndpoint() {
-        System.out.println("Mounting server endpoint...");
+        System.out.println("Mounting endpoint...");
         endpoint = Endpoint.create(new CoinServiceImpl());
         endpoint.publish(endpointURL);
-        System.out.println("Mounted server endpoint to: " + endpointURL);
+        System.out.println("Mounted endpoint to: " + endpointURL);
     }
 
     private static void publishEndpoint() throws UDDINamingException {
-        System.out.println("Publishing server endpoint...");
-        uddiNaming = new UDDINaming(uddiURL);
+        System.out.println("Publishing endpoint...");
         uddiNaming.bind(endpointName, endpointURL);
-        System.out.println(String.format("Published server endpoint as %s to %s", endpointName, uddiURL));
+        System.out.println(String.format("Published endpoint as %s to %s", endpointName, uddiURL));
     }
 
     private static void stopEndpoint() throws UDDINamingException {
+        System.out.println("Stopping endpoint...");
         endpoint.stop();
+        System.out.println("Unregistering from UDDI...");
         uddiNaming.unbind(endpointName);
     }
 
@@ -40,8 +41,9 @@ public class CoinServiceApp {
         uddiURL = args[0];
         endpointURL = args[1];
         endpointName = args[2];
+        unbind = args[3];
 
-        System.out.println(String.format("ARGS: %s %s %s", uddiURL, endpointURL, endpointName));
+        System.out.println(String.format("ARGS: %s %s %s %s", uddiURL, endpointURL, endpointName, unbind));
 
         System.out.println();
         System.out.println("KeyStore algorithms: " + Security.getAlgorithms("KeyStore"));
@@ -61,6 +63,11 @@ public class CoinServiceApp {
             System.out.println("Done.");
         }));
 
+        // Start UDDINaming
+        uddiNaming = new UDDINaming(uddiURL);
+        if (unbind != null && !unbind.equals("false")) {
+            uddiNaming.unbind(endpointName);
+        }
 
         startEndpoint();
         publishEndpoint();
@@ -68,6 +75,8 @@ public class CoinServiceApp {
         System.in.read();
 
         stopEndpoint();
+
+        System.out.println("Bye.");
     }
 
 }

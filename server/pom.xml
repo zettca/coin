@@ -20,6 +20,8 @@
         <ws.port>809${ws.i}</ws.port>
         <ws.url>http://${ws.host}:${ws.port}/ws/${ws.name}</ws.url>
 
+        <unbind>false</unbind>
+
         <wsdl.dir>${basedir}/../</wsdl.dir>
         <wsdl.name>coin.wsdl</wsdl.name>
         <wsdl.url>http://localhost:8090/ws/coin</wsdl.url>
@@ -101,6 +103,7 @@
                         <argument>${uddi.url}</argument>
                         <argument>${ws.url}</argument>
                         <argument>${ws.name}</argument>
+                        <argument>${unbind}</argument>
                     </arguments>
                 </configuration>
             </plugin>

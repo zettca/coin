@@ -32,6 +32,8 @@ public class CoinClient implements CoinServicePortType {
         }
     }
 
+    // ===== Main Client Methods
+
     @Override
     public String echo(String message) throws EchoException_Exception {
         return port.echo(message);
@@ -62,12 +64,31 @@ public class CoinClient implements CoinServicePortType {
         return port.audit(address);
     }
 
+    // ===== Auxiliary Client Test Methods
+
     @Override
     public void clean() {
         port.clean();
     }
 
+    // ===== Auxiliary Server Dist/Repl Methods
+
     @Override
     public void noticeMeSenpai(String wsURL) {
+    }
+
+    @Override
+    public boolean doRegister(byte[] publicKeyBytes) {
+        return false;
+    }
+
+    @Override
+    public boolean doSendAmount(TransactionView transaction) {
+        return false;
+    }
+
+    @Override
+    public boolean doReceiveAmount(TransactionView transaction) {
+        return false;
     }
 }

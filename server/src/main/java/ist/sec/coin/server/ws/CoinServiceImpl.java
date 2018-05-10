@@ -9,10 +9,12 @@ import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINamingException;
 
 import javax.jws.WebService;
+import javax.xml.ws.BindingProvider;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 @WebService(
@@ -23,48 +25,59 @@ import java.util.*;
         portName = "CoinServicePort",
         targetNamespace = "http://ws.server.coin.sec.ist/")
 public class CoinServiceImpl implements CoinServicePortType {
-    private Map<String, CoinServicePortType> peerServices;
+    private Map<String, CoinServicePortType> peerServices = new HashMap<>();
+    private UDDINaming uddiNaming;
     private Coin coin;
 
     public CoinServiceImpl() {
         coin = Coin.getInstance();
 
         try {
-            updatePeers();
+            uddiNaming = new UDDINaming(CoinServiceApp.uddiURL);
+            fillPeers();
         } catch (UDDINamingException e) {
-            System.out.println("ERROR getting peers...");
+            System.out.println("Error on UDDI...");
             System.out.println(e.getMessage());
         }
     }
 
-    public CoinServiceImpl(boolean update) {
-        coin = Coin.getInstance();
-    }
-
     // ===== Auxiliary Setup Methods
 
-    private void updatePeers() throws UDDINamingException {
-        Collection<String> peerUrls = findPeers();
-        peerServices = new HashMap<>();
+    private void fillPeers() {
+        Collection<String> peerUrls = searchPeers();
+        System.out.println("PEERS: " + peerUrls);
+        if (peerUrls == null || peerUrls.size() == 0) return;
+        peerServices.clear();
         for (String peerUrl : peerUrls) {
             if (!peerUrl.equals(CoinServiceApp.endpointURL)) {
-                /*CoinServiceImplService service = new CoinServiceImplService();
-                port = service.getCoinServiceImplPort(); */
-                /*CoinServicePortType peerService = new CoinServiceImpl(false);
-                BindingProvider bindingProvider = (BindingProvider) peerService;
-                Map<String, Object> requestContext = bindingProvider.getRequestContext();
-                requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, peerUrl);
-                peerServices.put(peerUrl, peerService);
-                peerService.noticeMeSenpai(CoinServiceApp.endpointURL);*/
+                addPeerService(peerUrl);
+                CoinServicePortType peerPort = peerServices.get(peerUrl);
+                peerPort.noticeMeSenpai(CoinServiceApp.endpointURL);
             }
         }
     }
 
-    private Collection<String> findPeers() throws UDDINamingException {
-        UDDINaming uddiNaming = new UDDINaming(CoinServiceApp.uddiURL);
-        Collection<String> coinServices = uddiNaming.list(CoinServiceApp.endpointName);
-        System.out.println("Found peer services: " + coinServices);
-        return coinServices;
+    private Collection<String> searchPeers() {
+        try {
+            return uddiNaming.list(CoinServiceApp.endpointName);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    private void addPeerService(String peerEndpointURL) {
+        // ignore if self or if already assigned
+        if (peerEndpointURL.equals(CoinServiceApp.endpointURL) || peerServices.containsKey(peerEndpointURL)) return;
+
+        CoinService peerService = new CoinService();
+        CoinServicePortType peerPort = peerService.getCoinServicePort();
+        BindingProvider bindingProvider = (BindingProvider) peerPort;
+        Map<String, Object> requestContext = bindingProvider.getRequestContext();
+        requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, peerEndpointURL);
+
+        peerServices.put(peerEndpointURL, peerPort);
+        System.out.println(String.format("Added %s as peer...", peerEndpointURL));
     }
 
     // ===== CoinService Methods
@@ -82,9 +95,15 @@ public class CoinServiceImpl implements CoinServicePortType {
         try {
             PublicKey key = CryptoUtils.getPublicKeyFromString(publicKeyBytes);
             AccountAddress address = coin.registerAccount(key);
+            if (!doRegisterAux(publicKeyBytes)) {
+                throw newRegisterException("Error performing operation. (no consensus)");
+            }
             System.out.println("Registered account: " + address.getFingerprint());
             return address.getFingerprint();
-        } catch (Exception e) {
+        } catch (CoinException e) {
+            throw newRegisterException(e.getMessage());
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            e.printStackTrace();
             throw newRegisterException(e.getMessage());
         }
     }
@@ -92,8 +111,10 @@ public class CoinServiceImpl implements CoinServicePortType {
     @Override
     public void sendAmount(TransactionView transactionView) throws SendAmountException_Exception {
         try {
-            Transaction transaction = newTransaction(transactionView);
-            coin.startTransaction(transaction);
+            coin.startTransaction(newTransaction(transactionView));
+            if (!doSendAmountAux(transactionView)) {
+                throw newSendAmountException("Error performing operation. (no consensus)");
+            }
         } catch (CoinException e) {
             throw newSendAmountException(e.getMessage());
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
@@ -117,8 +138,10 @@ public class CoinServiceImpl implements CoinServicePortType {
     @Override
     public void receiveAmount(TransactionView transactionView) throws ReceiveAmountException_Exception {
         try {
-            Transaction transaction = newTransaction(transactionView);
-            coin.commitTransaction(transaction);
+            coin.commitTransaction(newTransaction(transactionView));
+            if (!doReceiveAmountAux(transactionView)) {
+                throw newReceiveAmountException("Error performing operation. (no consensus)");
+            }
         } catch (CoinException e) {
             throw newReceiveAmountException(e.getMessage());
         } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
@@ -147,9 +170,103 @@ public class CoinServiceImpl implements CoinServicePortType {
     public void noticeMeSenpai(String wsURL) {
         System.out.println(String.format("Service at %s joined the network...", wsURL));
         //TODO: implement some refresh thing
-        if (!peerServices.containsKey(wsURL)) {
-            peerServices.put(wsURL, /*new CoinServiceImpl()*/null);
+        addPeerService(wsURL);
+    }
+
+    // ===== Atomic Writer Handlers
+
+    @Override
+    public boolean doRegister(byte[] publicKeyBytes) {
+        try {
+            PublicKey key = CryptoUtils.getPublicKeyFromString(publicKeyBytes);
+            coin.registerAccount(key);
+            System.out.println("I agreed on register");
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
+        return false;
+    }
+
+    @Override
+    public boolean doSendAmount(TransactionView transactionView) {
+        try {
+            coin.startTransaction(newTransaction(transactionView));
+            System.out.println("I agreed on send " + transactionView.getUid());
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean doReceiveAmount(TransactionView transactionView) {
+        try {
+            coin.commitTransaction(newTransaction(transactionView));
+            System.out.println("I agreed on send " + transactionView.getUid());
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean doRegisterAux(byte[] publicKeyBytes) {
+        int successes = 0, failures = 0;
+
+        System.out.println("Starting vote on register() to: " + peerServices.keySet());
+
+        for (CoinServicePortType peerPort : peerServices.values()) {
+            boolean done = peerPort.doRegister(publicKeyBytes);
+            System.out.println(String.format("PEER said %s!", done ? "YES" : "NO"));
+            if (done) {
+                successes++;
+            } else {
+                failures++;
+            }
+        }
+
+        return (successes > failures);
+    }
+
+    private boolean doSendAmountAux(TransactionView transactionView) {
+        int successes = 0, failures = 0;
+
+        System.out.println("Starting vote on sendAmount() to: " + peerServices.keySet());
+
+        for (CoinServicePortType peerPort : peerServices.values()) {
+            boolean done = peerPort.doSendAmount(transactionView);
+            System.out.println(String.format("PEER said %s!", done ? "YES" : "NO"));
+            if (done) {
+                successes++;
+            } else {
+                failures++;
+            }
+        }
+
+        return (successes > failures);
+    }
+
+    private boolean doReceiveAmountAux(TransactionView transactionView) {
+        int successes = 0, failures = 0;
+
+        System.out.println("Starting vote on receiveAmount() to: " + peerServices.keySet());
+
+        for (CoinServicePortType peerPort : peerServices.values()) {
+            boolean done = peerPort.doReceiveAmount(transactionView);
+            System.out.println(String.format("PEER said %s!", done ? "YES" : "NO"));
+            if (done) {
+                successes++;
+            } else {
+                failures++;
+            }
+        }
+
+        return (successes > failures);
     }
 
     // ===== Data Constructors
@@ -250,6 +367,5 @@ public class CoinServiceImpl implements CoinServicePortType {
         e.setMessage(message);
         return new AuditException_Exception(message, e);
     }
-
 
 }

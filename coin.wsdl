@@ -4,6 +4,7 @@
         xmlns:tns="http://ws.server.coin.sec.ist/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://ws.server.coin.sec.ist/"
         name="Coin">
+
     <types>
         <xs:schema xmlns:tns="http://ws.server.coin.sec.ist/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"
                    targetNamespace="http://ws.server.coin.sec.ist/">
@@ -66,6 +67,7 @@
             </xs:complexType>
         </xs:schema>
     </types>
+
     <message name="echo">
         <part name="message" type="xsd:string"/>
     </message>
@@ -112,7 +114,7 @@
     </message>
     <message name="noticeMeSenpaiResponse"/>
     <message name="register">
-        <part name="publickey" type="xsd:base64Binary"/>
+        <part name="publicKeyBytes" type="xsd:base64Binary"/>
     </message>
     <message name="registerResponse">
         <part name="return" type="xsd:string"/>
@@ -122,6 +124,25 @@
     </message>
     <message name="clean"/>
     <message name="cleanResponse"/>
+    <message name="doRegister">
+        <part name="publicKeyBytes" type="xsd:base64Binary"/>
+    </message>
+    <message name="doRegisterResponse">
+        <part name="return" type="xsd:boolean"/>
+    </message>
+    <message name="doSendAmount">
+        <part name="transaction" type="tns:TransactionView"/>
+    </message>
+    <message name="doSendAmountResponse">
+        <part name="return" type="xsd:boolean"/>
+    </message>
+    <message name="doReceiveAmount">
+        <part name="transaction" type="tns:TransactionView"/>
+    </message>
+    <message name="doReceiveAmountResponse">
+        <part name="return" type="xsd:boolean"/>
+    </message>
+
     <portType name="CoinServicePortType">
         <operation name="echo">
             <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/echoRequest" message="tns:echo"/>
@@ -180,7 +201,26 @@
             <output wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/cleanResponse"
                     message="tns:cleanResponse"/>
         </operation>
+        <operation name="doRegister">
+            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doRegister"
+                   message="tns:doRegister"/>
+            <output wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doRegisterResponse"
+                    message="tns:doRegisterResponse"/>
+        </operation>
+        <operation name="doSendAmount">
+            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doSendAmountRequest"
+                   message="tns:doSendAmount"/>
+            <output wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doSendAmountResponse"
+                    message="tns:doSendAmountResponse"/>
+        </operation>
+        <operation name="doReceiveAmount">
+            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doReceiveAmountRequest"
+                   message="tns:doReceiveAmount"/>
+            <output wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doReceiveAmountResponse"
+                    message="tns:doReceiveAmountResponse"/>
+        </operation>
     </portType>
+
     <binding name="CoinServicePortTypeImplPortBinding" type="tns:CoinServicePortType">
         <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
         <operation name="echo">
@@ -273,10 +313,39 @@
                 <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
             </output>
         </operation>
+        <operation name="doRegister">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
+            </output>
+        </operation>
+        <operation name="doSendAmount">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
+            </output>
+        </operation>
+        <operation name="doReceiveAmount">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
+            </output>
+        </operation>
     </binding>
+
     <service name="CoinService">
         <port name="CoinServicePort" binding="tns:CoinServicePortTypeImplPortBinding">
             <soap:address location="http://localhost:8090/ws/coin"/>
         </port>
     </service>
+
 </definitions>
