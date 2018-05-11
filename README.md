@@ -8,7 +8,9 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-You will need `maven` and Java `jdk8`
+You will need:
+ * `maven` and Java `jdk8` to build/compile and run the project
+ * Apache jUDDI for service discovery ([mirror](https://bit.ly/2wxswTa))
 
 ```
 sudo apt install maven openjdk-8-jdk
@@ -16,12 +18,11 @@ sudo apt install maven openjdk-8-jdk
 
 ### Installing
 
-Clone the repository and install with maven
+1. Clone the repository `git clone git@github.com:zettca/coin.git` 
+2. Make sure you started jUUDI
+3. Run the server `cd server && mvn compile exec:java`
+4. Install with `mvn install`
 
-```
-git clone git@github.com:zettca/coin.git
-mvn install
-```
 
 ## Running the tests
 
@@ -31,7 +32,7 @@ mvn test
 
 ## Deployment
 
-...
+(No deployment information)
 
 ## Built With
 
