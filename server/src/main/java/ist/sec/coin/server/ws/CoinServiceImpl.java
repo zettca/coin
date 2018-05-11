@@ -17,6 +17,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
+import static ist.sec.coin.server.ws.CoinServiceApp.*;
+
 @WebService(
         endpointInterface = "ist.sec.coin.server.ws.CoinServicePortType",
         wsdlLocation = "coin.wsdl",
@@ -33,42 +35,59 @@ public class CoinServiceImpl implements CoinServicePortType {
         coin = Coin.getInstance();
 
         try {
-            uddiNaming = new UDDINaming(CoinServiceApp.uddiURL);
-            fillPeers();
+            uddiNaming = new UDDINaming(uddiURL);
+            uddiNaming.rebind(endpointName, endpointURL);
+            refreshPeers();
+
+            // important timer, but sucks CPU usage
+            /*
+            int UPDATE_INTERVAL = 10 * 1000;
+            Timer timer = new Timer();
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    refreshPeers();
+                }
+            }, 0, UPDATE_INTERVAL);
+            */
+
+            //broadcastExistence();
         } catch (UDDINamingException e) {
-            System.out.println("Error on UDDI...");
+            System.out.println("Error registering service...");
             System.out.println(e.getMessage());
         }
     }
 
     // ===== Auxiliary Setup Methods
 
-    private void fillPeers() {
-        Collection<String> peerUrls = searchPeers();
-        System.out.println("PEERS: " + peerUrls);
-        if (peerUrls == null || peerUrls.size() == 0) return;
+    private void broadcastExistence() {
+        for (CoinServicePortType peerPort : peerServices.values()) {
+            peerPort.noticeMeSenpai(endpointURL);
+        }
+
+    }
+
+    private void refreshPeers() {
+        System.out.println("Updating service peers...");
+
         peerServices.clear();
-        for (String peerUrl : peerUrls) {
-            if (!peerUrl.equals(CoinServiceApp.endpointURL)) {
-                addPeerService(peerUrl);
-                CoinServicePortType peerPort = peerServices.get(peerUrl);
-                peerPort.noticeMeSenpai(CoinServiceApp.endpointURL);
+
+        for (int i = 0; i < 10; i++) {
+            try {
+                String wsName = CoinServiceApp.SERVICE_NAME + i;
+                String wsURL = uddiNaming.lookup(wsName);
+                if (wsURL != null) {
+                    addPeerService(wsURL);
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
         }
     }
 
-    private Collection<String> searchPeers() {
-        try {
-            return uddiNaming.list(CoinServiceApp.endpointName);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return null;
-    }
-
     private void addPeerService(String peerEndpointURL) {
         // ignore if self or if already assigned
-        if (peerEndpointURL.equals(CoinServiceApp.endpointURL) || peerServices.containsKey(peerEndpointURL)) return;
+        if (peerEndpointURL == null || peerEndpointURL.equals(endpointURL)) return;
 
         CoinService peerService = new CoinService();
         CoinServicePortType peerPort = peerService.getCoinServicePort();
@@ -76,8 +95,13 @@ public class CoinServiceImpl implements CoinServicePortType {
         Map<String, Object> requestContext = bindingProvider.getRequestContext();
         requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, peerEndpointURL);
 
-        peerServices.put(peerEndpointURL, peerPort);
-        System.out.println(String.format("Added %s as peer...", peerEndpointURL));
+        try {
+            peerPort.echo("connection test");
+            peerServices.put(peerEndpointURL, peerPort);
+            System.out.println(String.format("Added PEER: %s", peerEndpointURL));
+        } catch (EchoException_Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     // ===== CoinService Methods
@@ -98,12 +122,12 @@ public class CoinServiceImpl implements CoinServicePortType {
             if (!doRegisterAux(publicKeyBytes)) {
                 throw newRegisterException("Error performing operation. (no consensus)");
             }
-            System.out.println("Registered account: " + address.getFingerprint());
+            System.out.println("Registering account: " + address.getFingerprint());
             return address.getFingerprint();
         } catch (CoinException e) {
             throw newRegisterException(e.getMessage());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             throw newRegisterException(e.getMessage());
         }
     }
@@ -118,7 +142,7 @@ public class CoinServiceImpl implements CoinServicePortType {
         } catch (CoinException e) {
             throw newSendAmountException(e.getMessage());
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             throw newSendAmountException(e.getMessage());
         }
     }
@@ -145,7 +169,7 @@ public class CoinServiceImpl implements CoinServicePortType {
         } catch (CoinException e) {
             throw newReceiveAmountException(e.getMessage());
         } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             throw newReceiveAmountException(e.getMessage());
         }
     }
@@ -164,27 +188,30 @@ public class CoinServiceImpl implements CoinServicePortType {
     public void clean() {
         System.out.println("Clearing all data...");
         coin.clean();
+        doCleanAux();
     }
 
     @Override
     public void noticeMeSenpai(String wsURL) {
         System.out.println(String.format("Service at %s joined the network...", wsURL));
-        //TODO: implement some refresh thing
         addPeerService(wsURL);
     }
 
     // ===== Atomic Writer Handlers
 
     @Override
+    public void doClean() {
+        coin.clean();
+    }
+
+    @Override
     public boolean doRegister(byte[] publicKeyBytes) {
         try {
             PublicKey key = CryptoUtils.getPublicKeyFromString(publicKeyBytes);
             coin.registerAccount(key);
-            System.out.println("I agreed on register");
             return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            e.printStackTrace();
         }
         return false;
     }
@@ -193,11 +220,9 @@ public class CoinServiceImpl implements CoinServicePortType {
     public boolean doSendAmount(TransactionView transactionView) {
         try {
             coin.startTransaction(newTransaction(transactionView));
-            System.out.println("I agreed on send " + transactionView.getUid());
             return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            e.printStackTrace();
         }
         return false;
     }
@@ -206,30 +231,37 @@ public class CoinServiceImpl implements CoinServicePortType {
     public boolean doReceiveAmount(TransactionView transactionView) {
         try {
             coin.commitTransaction(newTransaction(transactionView));
-            System.out.println("I agreed on send " + transactionView.getUid());
             return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            e.printStackTrace();
         }
         return false;
+    }
+
+    private void doCleanAux() {
+        // test method, no voting
+        for (CoinServicePortType peerPort : peerServices.values()) {
+            peerPort.doClean();
+        }
     }
 
     private boolean doRegisterAux(byte[] publicKeyBytes) {
         Set<String> peerUrls = peerServices.keySet();
         int successes = 0, failures = 0;
 
-        System.out.println("Starting vote on register() to: " + peerUrls);
+        System.out.println("Starting vote on register()");
+        System.out.println(peerUrls);
 
         for (CoinServicePortType peerPort : peerServices.values()) {
             boolean done = peerPort.doRegister(publicKeyBytes);
-            System.out.println(String.format("PEER said %s!", done ? "YES" : "NO"));
+            System.out.print((done ? "YES" : "NO") + " ");
             if (done) {
                 successes++;
             } else {
                 failures++;
             }
         }
+        System.out.println();
 
         return (peerUrls.size() <= 1 || successes > failures);
     }
@@ -238,17 +270,19 @@ public class CoinServiceImpl implements CoinServicePortType {
         Set<String> peerUrls = peerServices.keySet();
         int successes = 0, failures = 0;
 
-        System.out.println("Starting vote on sendAmount() to: " + peerUrls);
+        System.out.println("Starting vote on sendAmount()");
+        System.out.println(peerUrls);
 
         for (CoinServicePortType peerPort : peerServices.values()) {
             boolean done = peerPort.doSendAmount(transactionView);
-            System.out.println(String.format("PEER said %s!", done ? "YES" : "NO"));
+            System.out.print((done ? "YES" : "NO") + " ");
             if (done) {
                 successes++;
             } else {
                 failures++;
             }
         }
+        System.out.println();
 
         return (peerUrls.size() <= 1 || successes > failures);
     }
@@ -257,17 +291,19 @@ public class CoinServiceImpl implements CoinServicePortType {
         Set<String> peerUrls = peerServices.keySet();
         int successes = 0, failures = 0;
 
-        System.out.println("Starting vote on receiveAmount() to: " + peerUrls);
+        System.out.println("Starting vote on receiveAmount()");
+        System.out.println(peerUrls);
 
         for (CoinServicePortType peerPort : peerServices.values()) {
             boolean done = peerPort.doReceiveAmount(transactionView);
-            System.out.println(String.format("PEER said %s!", done ? "YES" : "NO"));
+            System.out.print((done ? "YES" : "NO") + " ");
             if (done) {
                 successes++;
             } else {
                 failures++;
             }
         }
+        System.out.println();
 
         return (peerUrls.size() <= 1 || successes > failures);
     }

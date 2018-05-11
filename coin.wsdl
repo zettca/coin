@@ -122,8 +122,11 @@
     <message name="RegisterException">
         <part name="fault" element="tns:RegisterException"/>
     </message>
+    <!-- Messages for testing and sync -->
     <message name="clean"/>
     <message name="cleanResponse"/>
+    <message name="doClean"/>
+    <message name="doCleanResponse"/>
     <message name="doRegister">
         <part name="publicKeyBytes" type="xsd:base64Binary"/>
     </message>
@@ -145,7 +148,8 @@
 
     <portType name="CoinServicePortType">
         <operation name="echo">
-            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/echoRequest" message="tns:echo"/>
+            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/echoRequest"
+                   message="tns:echo"/>
             <output wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/echoResponse"
                     message="tns:echoResponse"/>
             <fault message="tns:EchoException" name="EchoException"
@@ -176,7 +180,8 @@
                    wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/receiveAmount/Fault/ReceiveAmountException"/>
         </operation>
         <operation name="audit">
-            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/auditRequest" message="tns:audit"/>
+            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/auditRequest"
+                   message="tns:audit"/>
             <output wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/auditResponse"
                     message="tns:auditResponse"/>
             <fault message="tns:AuditException" name="AuditException"
@@ -197,9 +202,16 @@
                    wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/register/Fault/RegisterException"/>
         </operation>
         <operation name="clean">
-            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/cleanRequest" message="tns:clean"/>
+            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/cleanRequest"
+                   message="tns:clean"/>
             <output wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/cleanResponse"
                     message="tns:cleanResponse"/>
+        </operation>
+        <operation name="doClean">
+            <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doCleanRequest"
+                   message="tns:doClean"/>
+            <output wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doCleanResponse"
+                    message="tns:doCleanResponse"/>
         </operation>
         <operation name="doRegister">
             <input wsam:Action="http://ws.server.coin.sec.ist/CoinServicePortType/doRegister"
@@ -305,6 +317,15 @@
             </fault>
         </operation>
         <operation name="clean">
+            <soap:operation soapAction=""/>
+            <input>
+                <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
+            </input>
+            <output>
+                <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>
+            </output>
+        </operation>
+        <operation name="doClean">
             <soap:operation soapAction=""/>
             <input>
                 <soap:body use="literal" namespace="http://ws.server.coin.sec.ist/"/>

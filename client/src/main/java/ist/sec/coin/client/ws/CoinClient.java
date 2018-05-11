@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class CoinClient implements CoinServicePortType {
     private CoinServicePortType port;
+    private UDDINaming uddiNaming;
 
     public CoinClient() {
         CoinService service = new CoinService();
@@ -18,18 +19,35 @@ public class CoinClient implements CoinServicePortType {
     public CoinClient(String uddiURL, String wsName) {
         this();
         try {
-            UDDINaming uddiNaming = new UDDINaming(uddiURL);
-            String wsURL = uddiNaming.lookup(wsName);
-
-            BindingProvider bindingProvider = (BindingProvider) port;
-            Map<String, Object> requestContext = bindingProvider.getRequestContext();
-            requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, wsURL);
-            System.out.println("Bound requests to: " + wsURL);
-
+            uddiNaming = new UDDINaming(uddiURL);
+            findAndBindToService(wsName);
         } catch (UDDINamingException e) {
-            System.out.println("Error on UDDI...");
+            System.out.println("Error registering service...");
             System.out.println(e.getMessage());
         }
+    }
+
+    private String findAndBindToService(String wsName) throws UDDINamingException {
+        final int NUM_SERVERS = 10;
+
+        //TODO: maybe select a random server instead?
+        for (int i = 0; i < NUM_SERVERS; i++) {
+            String wsURL = uddiNaming.lookup(wsName + i);
+
+            try {
+                BindingProvider bindingProvider = (BindingProvider) port;
+                Map<String, Object> requestContext = bindingProvider.getRequestContext();
+                requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, wsURL);
+
+                port.echo("testing connection");
+                System.out.println("Binding requests to: " + wsURL);
+
+                return wsURL;
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+        return null;
     }
 
     // ===== Main Client Methods
@@ -75,6 +93,10 @@ public class CoinClient implements CoinServicePortType {
 
     @Override
     public void noticeMeSenpai(String wsURL) {
+    }
+
+    @Override
+    public void doClean() {
     }
 
     @Override

@@ -15,7 +15,7 @@
         <mainclass>ist.sec.coin.server.ws.CoinServiceApp</mainclass>
 
         <ws.i>0</ws.i>
-        <ws.name>coin</ws.name>
+        <ws.name>coin${ws.i}</ws.name>
         <ws.host>localhost</ws.host>
         <ws.port>809${ws.i}</ws.port>
         <ws.url>http://${ws.host}:${ws.port}/ws/${ws.name}</ws.url>

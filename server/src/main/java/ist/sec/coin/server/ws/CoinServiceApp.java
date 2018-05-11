@@ -7,28 +7,29 @@ import javax.xml.ws.Endpoint;
 import java.security.Security;
 
 public class CoinServiceApp {
+    static String SERVICE_NAME = "coin";
+    static int MAX_SERVERS = 10;
     static String uddiURL, endpointURL, endpointName, unbind;
     private static Endpoint endpoint;
     private static UDDINaming uddiNaming;
 
-    private static void startEndpoint() {
+    private static void publishEndpoint() {
         System.out.println("Mounting endpoint...");
         endpoint = Endpoint.create(new CoinServiceImpl());
         endpoint.publish(endpointURL);
         System.out.println("Mounted endpoint to: " + endpointURL);
     }
 
-    private static void publishEndpoint() throws UDDINamingException {
-        System.out.println("Publishing endpoint...");
-        uddiNaming.bind(endpointName, endpointURL);
-        System.out.println(String.format("Published endpoint as %s to %s", endpointName, uddiURL));
-    }
-
     private static void stopEndpoint() throws UDDINamingException {
         System.out.println("Stopping endpoint...");
         endpoint.stop();
-        System.out.println("Unregistering from UDDI...");
         uddiNaming.unbind(endpointName);
+    }
+
+    private static void clearUDDI() throws UDDINamingException {
+        for (int i = 0; i < MAX_SERVERS; i++) {
+            uddiNaming.unbind(SERVICE_NAME + i);
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -45,12 +46,6 @@ public class CoinServiceApp {
 
         System.out.println(String.format("ARGS: %s %s %s %s", uddiURL, endpointURL, endpointName, unbind));
 
-        System.out.println();
-        System.out.println("KeyStore algorithms: " + Security.getAlgorithms("KeyStore"));
-        System.out.println("Signature algorithms: " + Security.getAlgorithms("Signature"));
-        System.out.println("MessageDigest algorithms: " + Security.getAlgorithms("MessageDigest"));
-        System.out.println();
-
         // Catch Ctrl+C to exit properly
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("\nIntercepted SIGINT");
@@ -63,13 +58,12 @@ public class CoinServiceApp {
             System.out.println("Done.");
         }));
 
-        // Start UDDINaming
+        System.out.println("Starting register service...");
         uddiNaming = new UDDINaming(uddiURL);
         if (unbind != null && !unbind.equals("false")) {
-            uddiNaming.unbind(endpointName);
+            clearUDDI();
         }
 
-        startEndpoint();
         publishEndpoint();
 
         System.in.read();
@@ -77,6 +71,6 @@ public class CoinServiceApp {
         stopEndpoint();
 
         System.out.println("Bye.");
+        System.exit(1);
     }
-
 }

@@ -5,6 +5,7 @@ import ist.sec.coin.server.security.CryptoUtils;
 import ist.sec.coin.server.ws.TransactionView;
 import org.junit.BeforeClass;
 
+import java.io.IOException;
 import java.security.*;
 import java.util.Properties;
 import java.util.UUID;
@@ -16,12 +17,18 @@ public class BaseServiceIT {
 
     @BeforeClass
     public static void oneTimeSetup() {
+        System.setProperty("javax.xml.bind.JAXBContext", "com.sun.xml.internal.bind.v2.ContextFactory");
+
         final int NUM_ACCOUNTS = 3;
         properties = new Properties();
-        client = new CoinClient();
         keys = new KeyPair[NUM_ACCOUNTS];
 
         try {
+            properties.load(BaseServiceIT.class.getResourceAsStream("/test.properties"));
+            String uddiURL = properties.getProperty("uddi.url");
+            String wsName = properties.getProperty("ws.name");
+            client = new CoinClient(uddiURL, wsName);
+
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance(CryptoUtils.KEY_GEN_ALGORITHM);
             keyGen.initialize(CryptoUtils.KEY_SIZE); // use default SecureRandom
             for (int i = 0; i < keys.length; i++) {
@@ -30,6 +37,8 @@ public class BaseServiceIT {
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Error generating keys!");
             e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Error loading properties!");
         }
     }
 
