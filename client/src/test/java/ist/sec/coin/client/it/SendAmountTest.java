@@ -86,4 +86,12 @@ public class SendAmountTest extends BaseServiceIT {
         TransactionView trans = newSignedTransactionView(accounts[0], accounts[1], 2, keys[0].getPrivate());
         client.sendAmount(trans);
     }
+
+    @Test(expected = Exception.class)
+    public void testReplayAttack() throws SendAmountException_Exception, NoSuchAlgorithmException, SignatureException,
+            InvalidKeyException {
+        TransactionView trans = newSignedTransactionView(accounts[0], accounts[1], 2, keys[0].getPrivate());
+        client.sendAmount(trans);
+        client.sendAmount(trans);
+    }
 }
